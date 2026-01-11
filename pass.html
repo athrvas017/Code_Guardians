@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Password Security Toolkit | Code Guardians</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">Code<span>Guardians</span></div>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="pass.html" class="nav-link active">Password Toolkit</a>
+        <a href="#" class="nav-link disabled">Threat Scanner</a>
+        <a href="#" class="nav-link disabled">Extension</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="container">
+
+      <!-- Buttons -->
+      <div class="button-group">
+        <button class="button active" data-target="generator">Password Generator</button>
+        <button class="button" data-target="strength">Strength Checker</button>
+        <button class="button" data-target="breach">Breach Detector</button>
+      </div>
+
+      <!-- Password Generator -->
+      <section class="content-section active" id="generator">
+        <div class="card">
+          <h2>Password Generator</h2>
+
+          <form id="generator-form" class="form-grid">
+            <div class="form-row">
+              <label for="generator-length">Password Length</label>
+              <input id="generator-length" type="number" min="8" max="64" value="16" required>
+            </div>
+
+            <div class="form-row checkbox-row">
+              <span>Character sets</span>
+              <label><input type="checkbox" id="gen-lower" checked> Lowercase</label>
+              <label><input type="checkbox" id="gen-upper" checked> Uppercase</label>
+              <label><input type="checkbox" id="gen-digits" checked> Digits</label>
+              <label><input type="checkbox" id="gen-symbols" checked> Symbols</label>
+            </div>
+
+            <button type="submit" class="button full-width">Generate</button>
+          </form>
+
+          <div class="password-output" id="generated-password" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- Strength Checker -->
+      <section class="content-section" id="strength">
+        <div class="card">
+          <h2>Password Strength Checker</h2>
+
+          <form id="strength-form" class="form-grid">
+            <div class="form-row">
+              <label for="strength-password">Password</label>
+              <input id="strength-password" type="password" placeholder="Enter or paste a password" required>
+            </div>
+
+            <button type="submit" class="button full-width">Analyze Strength</button>
+          </form>
+
+          <div class="strength-meter" aria-live="polite">
+            <div class="strength-bar" id="strength-bar"></div>
+          </div>
+          <p class="strength-label" id="strength-label">Start typing to see password strength.</p>
+          <ul class="strength-suggestions" id="strength-suggestions"></ul>
+        </div>
+      </section>
+
+      <!-- Breach Detector (UI only, no API wiring yet) -->
+      <section class="content-section" id="breach">
+        <div class="card">
+          <h2>Password Breach Detector</h2>
+
+          <p class="muted">This UI is designed for future integration with the Have I Been Pwned API.</p>
+          <form id="breach-form" class="form-grid">
+            <div class="form-row">
+              <label for="breach-password">Password</label>
+              <input id="breach-password" type="password" placeholder="Enter password to check" required>
+            </div>
+
+            <button type="submit" class="button full-width" disabled>Check Breach (Coming Soon)</button>
+          </form>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Cyber Threat Analysis Toolkit &bull; Code Guardians</p>
+      <p class="footer-meta">Prototype UI – API integrations and browser extension coming soon.</p>
+    </div>
+  </footer>
+
+  <!-- JS -->
+  <script src="./Password.js"></script>
+  <script>
+    // Pull utilities from global namespace exposed by Password.js
+    const { generatePassword, evaluatePasswordStrength } = window.PasswordUtils || {};
+
+    const tabButtons = document.querySelectorAll('.button-group .button');
+    const sections = document.querySelectorAll('.content-section');
+
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.target;
+
+        sections.forEach(sec => {
+          sec.classList.toggle('active', sec.id === target);
+        });
+
+        tabButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // ----- Password Generator -----
+    const generatorForm = document.getElementById('generator-form');
+    const generatedPasswordEl = document.getElementById('generated-password');
+
+    generatorForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const length = parseInt(document.getElementById('generator-length').value, 10) || 16;
+      const useLower = document.getElementById('gen-lower').checked;
+      const useUpper = document.getElementById('gen-upper').checked;
+      const useDigits = document.getElementById('gen-digits').checked;
+      const useSymbols = document.getElementById('gen-symbols').checked;
+
+      try {
+        const password = generatePassword({ length, useUpper, useLower, useDigits, useSymbols });
+        generatedPasswordEl.textContent = password;
+        generatedPasswordEl.classList.remove('error');
+        generatedPasswordEl.classList.add('visible');
+      } catch (error) {
+        generatedPasswordEl.textContent = error.message;
+        generatedPasswordEl.classList.add('visible', 'error');
+      }
+    });
+
+    // ----- Password Strength Checker -----
+    const strengthForm = document.getElementById('strength-form');
+    const strengthInput = document.getElementById('strength-password');
+    const strengthBar = document.getElementById('strength-bar');
+    const strengthLabel = document.getElementById('strength-label');
+    const strengthSuggestions = document.getElementById('strength-suggestions');
+
+    function updateStrengthView() {
+      const { score, label, suggestions } = evaluatePasswordStrength(strengthInput.value);
+
+      const percentages = [0, 25, 50, 75, 100];
+      strengthBar.style.width = percentages[score] + '%';
+      strengthBar.className = 'strength-bar strength-' + score;
+
+      strengthLabel.textContent = label;
+
+      strengthSuggestions.innerHTML = '';
+      suggestions.forEach(text => {
+        const li = document.createElement('li');
+        li.textContent = text;
+        strengthSuggestions.appendChild(li);
+      });
+    }
+
+    strengthInput.addEventListener('input', updateStrengthView);
+
+    strengthForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      updateStrengthView();
+    });
+
+    // Prevent default submit for other forms that are not wired to a backend yet
+    document.getElementById('breach-form').addEventListener('submit', (event) => event.preventDefault());
+  </script>
+</body>
+</html>
