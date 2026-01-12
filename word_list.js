@@ -1,5 +1,4 @@
-
-export const word_list = `
+const word_list = `
 abandon
 ability
 able
@@ -2048,3 +2047,5 @@ zebra
 zero
 zone
 zoo`.trim().split('\n');
+
+export default word_list;

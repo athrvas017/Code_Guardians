@@ -1,143 +1,192 @@
 // Password utilities for the Password Security Toolkit
-// This file is loaded via a classic <script> tag and exposes a global PasswordUtils object.
+import word_list from "./word_list.js";
 
-(function (global) {
-  /**
-   * Generate a cryptographically–strong random password.
-   *
-   * Options:
-   *  - length: total password length (default: 16)
-   *  - useUpper: include A–Z
-   *  - useLower: include a–z
-   *  - useDigits: include 0–9
-   *  - useSymbols: include common symbols
-   */
-  function generatePassword({
-    length = 16,
-    useUpper = true,
-    useLower = true,
-    useDigits = true,
-    useSymbols = true,
-  } = {}) {
-    const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const lower = "abcdefghijklmnopqrstuvwxyz";
-    const digits = "0123456789";
-    const symbols = "!@#$%^&*()-_=+[]{};:,.<>?/";
+const wordlist = word_list; 
 
-    let alphabet = "";
-    if (useUpper) alphabet += upper;
-    if (useLower) alphabet += lower;
-    if (useDigits) alphabet += digits;
-    if (useSymbols) alphabet += symbols;
-
-    if (!alphabet) {
-      throw new Error("At least one character set must be selected");
-    }
-
-    const randomBuffer = new Uint32Array(length);
-    crypto.getRandomValues(randomBuffer);
-
-    let result = "";
-    for (let i = 0; i < length; i++) {
-      const index = randomBuffer[i] % alphabet.length;
-      result += alphabet.charAt(index);
-    }
-
-    return result;
+/* =========================
+   PASSWORD GENERATOR
+   ========================= */
+export function generatePassword({ wordCount = 6, separator = "-" } = {}) {
+  if (wordCount < 4 || wordCount > 16) {
+    throw new Error("wordCount must be between 4 and 16");
   }
 
-  /**
-   * Evaluate password strength.
-   * Returns an object: { score: 0–4, label: string, suggestions: string[] }
-   */
-  function evaluatePasswordStrength(password) {
-    const suggestions = [];
+  const passwordWords = [];
+  const randomBuffer = new Uint32Array(wordCount);
 
-    if (!password || password.length === 0) {
-      return { score: 0, label: "Empty", suggestions: ["Start typing a password to analyze its strength."] };
-    }
+  // Secure random number generation
+  crypto.getRandomValues(randomBuffer);
 
-    let score = 0;
-
-    // Length
-    if (password.length >= 16) {
-      score += 2;
-    } else if (password.length >= 12) {
-      score += 1.5;
-      suggestions.push("Use at least 16 characters for stronger protection.");
-    } else if (password.length >= 8) {
-      score += 1;
-      suggestions.push("Increase length to at least 12–16 characters.");
-    } else {
-      suggestions.push("Very short – increase length significantly.");
-    }
-
-    // Character variety
-    const hasLower = /[a-z]/.test(password);
-    const hasUpper = /[A-Z]/.test(password);
-    const hasDigit = /[0-9]/.test(password);
-    const hasSymbol = /[^A-Za-z0-9]/.test(password);
-
-    const varietyCount = [hasLower, hasUpper, hasDigit, hasSymbol].filter(Boolean).length;
-    if (varietyCount >= 3) {
-      score += 2;
-    } else if (varietyCount === 2) {
-      score += 1;
-      suggestions.push("Mix in more character types (uppercase, lowercase, numbers, symbols).");
-    } else {
-      suggestions.push("Use a mix of uppercase, lowercase, numbers and symbols.");
-    }
-
-    // Penalize very common patterns
-    const lowerPassword = password.toLowerCase();
-    const commonPatterns = [
-      "password",
-      "1234",
-      "qwerty",
-      "admin",
-      "letmein",
-    ];
-
-    if (commonPatterns.some((pat) => lowerPassword.includes(pat))) {
-      score -= 2;
-      suggestions.push("Avoid common words or simple patterns like 'password' or '1234'.");
-    }
-
-    if (/^(.)\1{3,}$/.test(password)) {
-      // Same character repeated
-      score -= 2;
-      suggestions.push("Avoid repeating the same character many times.");
-    }
-
-    // Clamp score between 0 and 4
-    score = Math.max(0, Math.min(4, Math.round(score)));
-
-    let label;
-    switch (score) {
-      case 0:
-        label = "Very Weak";
-        break;
-      case 1:
-        label = "Weak";
-        break;
-      case 2:
-        label = "Fair";
-        break;
-      case 3:
-        label = "Strong";
-        break;
-      case 4:
-      default:
-        label = "Very Strong";
-        break;
-    }
-
-    return { score, label, suggestions };
+  for (let i = 0; i < wordCount; i++) {
+    const index = randomBuffer[i] % wordlist.length;
+    passwordWords.push(wordlist[index]);
   }
 
-  // Expose as a single global namespace
-  global.PasswordUtils = {
-    generatePassword,
-    evaluatePasswordStrength,
+  return passwordWords.join(separator);
+}
+
+/* =========================
+   STRENGTH CHECKER (ENTROPY)
+   ========================= */
+export function evaluatePasswordStrength(password, options = {}) {
+  const {
+    separator = "-",
+    isGenerated = false,
+    wordlistSize = wordlist.length
+  } = options;
+
+  if (!password || password.trim().length === 0) {
+    return {
+      score: 0,
+      label: "Empty",
+      entropy: 0,
+      suggestions: ["Enter or generate a password."]
+    };
+  }
+
+  let entropy = 0;
+  const suggestions = [];
+
+  /* =========================
+     PASS PHRASE (SAFE MODE)
+     ========================= */
+  if (isGenerated && password.includes(separator)) {
+    const words = password.split(separator).filter(Boolean);
+    entropy = Math.log2(wordlistSize) * words.length;
+
+    if (words.length < 6) {
+      suggestions.push("Use at least 6 randomly generated words.");
+    }
+
+  } else {
+    /* =========================
+       CHARACTER PASSWORD MODE
+       ========================= */
+    let pool = 0;
+    if (/[a-z]/.test(password)) pool += 26;
+    if (/[A-Z]/.test(password)) pool += 26;
+    if (/[0-9]/.test(password)) pool += 10;
+    if (/[^A-Za-z0-9]/.test(password)) pool += 32;
+
+    entropy = Math.log2(pool || 1) * password.length;
+
+    if (password.length < 12) {
+      suggestions.push("Use at least 12 characters.");
+    }
+  }
+
+  /* =========================
+     COMMON PENALTIES
+     ========================= */
+  if (/^(.)\1+$/.test(password)) entropy *= 0.5;
+  if (/123|password|qwerty|admin/i.test(password)) entropy *= 0.4;
+
+  entropy = Math.round(entropy);
+
+  /* =========================
+     SCORING (REALISTIC)
+     ========================= */
+  let score, label;
+
+  if (entropy < 28) {
+    score = 1;
+    label = "Very Weak";
+  } else if (entropy < 36) {
+    score = 2;
+    label = "Weak";
+  } else if (entropy < 60) {
+    score = 3;
+    label = "Good";
+  } else {
+    score = 4;
+    label = "Very Strong";
+  }
+
+  return {
+    score,
+    label,
+    entropy,
+    suggestions
   };
-})(window);
+}
+
+
+export async function checkPasswordBreach(password) {
+  if (!password || password.length < 4) {
+    return {
+      status: "invalid",
+      message: "🤨 That’s not even a password. Try harder."
+    };
+  }
+
+  // Safety check: subtle crypto requires HTTPS or localhost
+  if (!crypto.subtle) {
+    throw new Error("Crypto API not available. Ensure you are using HTTPS or localhost.");
+  }
+
+  const hashBuffer = await crypto.subtle.digest(
+    "SHA-1",
+    new TextEncoder().encode(password)
+  );
+
+  const hash = Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("")
+    .toUpperCase();
+
+  const prefix = hash.slice(0, 5);
+  const suffix = hash.slice(5);
+
+  const response = await fetch(
+    `https://api.pwnedpasswords.com/range/${prefix}`
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch from breach database.");
+  }
+
+  const text = await response.text();
+  
+  // FIX: Split using a regex that handles both \n and \r\n
+  const lines = text.split(/\r?\n/);
+  const match = lines.find(line => line.startsWith(suffix));
+
+  const count = match ? parseInt(match.split(":")[1], 10) : 0;
+
+  /* ==========================
+      FUN RESPONSE MAPPING
+     ========================== */
+  if (count === 0) {
+    return {
+      status: "safe",
+      count,
+      emoji: "🟢",
+      message: "This password is a ghost 👻 — no breaches found!"
+    };
+  }
+
+  if (count <= 10) {
+    return {
+      status: "exposed",
+      count,
+      emoji: "🟡",
+      message: `Seen ${count} times. Not terrible… but not great either.`
+    };
+  }
+
+  if (count <= 1000) {
+    return {
+      status: "danger",
+      count,
+      emoji: "🟠",
+      message: `Uh-oh 😬 This password appeared ${count} times in breaches.`
+    };
+  }
+
+  return {
+    status: "compromised",
+    count,
+    emoji: "🔴",
+    message: `ABORT 🚨 This password is burned (${count} breaches).`
+  };
+}

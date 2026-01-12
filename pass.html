@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Password Security Toolkit | Code Guardians</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -22,30 +23,24 @@
   <main class="main">
     <div class="container">
 
-      <!-- Buttons -->
       <div class="button-group">
         <button class="button active" data-target="generator">Password Generator</button>
         <button class="button" data-target="strength">Strength Checker</button>
         <button class="button" data-target="breach">Breach Detector</button>
       </div>
 
-      <!-- Password Generator -->
       <section class="content-section active" id="generator">
         <div class="card">
           <h2>Password Generator</h2>
-
           <form id="generator-form" class="form-grid">
             <div class="form-row">
-              <label for="generator-length">Password Length</label>
-              <input id="generator-length" type="number" min="8" max="64" value="16" required>
+              <label for="word-count">Number of words</label>
+              <input id="word-count" type="number" min="4" max="16" value="4" required>
             </div>
 
-            <div class="form-row checkbox-row">
-              <span>Character sets</span>
-              <label><input type="checkbox" id="gen-lower" checked> Lowercase</label>
-              <label><input type="checkbox" id="gen-upper" checked> Uppercase</label>
-              <label><input type="checkbox" id="gen-digits" checked> Digits</label>
-              <label><input type="checkbox" id="gen-symbols" checked> Symbols</label>
+            <div class="form-row">
+              <label for="separator">Separator</label>
+              <input id="separator" type="text" maxlength="3" value="-" placeholder="- _ .">
             </div>
 
             <button type="submit" class="button full-width">Generate</button>
@@ -55,17 +50,14 @@
         </div>
       </section>
 
-      <!-- Strength Checker -->
       <section class="content-section" id="strength">
         <div class="card">
           <h2>Password Strength Checker</h2>
-
           <form id="strength-form" class="form-grid">
             <div class="form-row">
               <label for="strength-password">Password</label>
               <input id="strength-password" type="password" placeholder="Enter or paste a password" required>
             </div>
-
             <button type="submit" class="button full-width">Analyze Strength</button>
           </form>
 
@@ -77,22 +69,25 @@
         </div>
       </section>
 
-      <!-- Breach Detector (UI only, no API wiring yet) -->
       <section class="content-section" id="breach">
-        <div class="card">
-          <h2>Password Breach Detector</h2>
+  <div class="card">
+    <h2>Password Breach Detector</h2>
+    <p class="muted">Check if your password has been leaked in a data breach.</p>
+    
+    <form id="breach-form" class="form-grid">
+      <div class="form-row">
+        <label for="breach-password">Password</label>
+        <input id="breach-password" type="password" placeholder="Enter password to check" required>
+      </div>
+      <button type="submit" id="breach-button" class="button full-width">Check Breach Status</button>
+    </form>
 
-          <p class="muted">This UI is designed for future integration with the Have I Been Pwned API.</p>
-          <form id="breach-form" class="form-grid">
-            <div class="form-row">
-              <label for="breach-password">Password</label>
-              <input id="breach-password" type="password" placeholder="Enter password to check" required>
-            </div>
-
-            <button type="submit" class="button full-width" disabled>Check Breach (Coming Soon)</button>
-          </form>
-        </div>
-      </section>
+    <div id="breach-result" class="breach-output" style="display: none; margin-top: 20px; padding: 15px; border-radius: 8px; text-align: center;">
+      <div id="breach-emoji" style="font-size: 2rem; margin-bottom: 10px;"></div>
+      <p id="breach-message" style="font-weight: bold; margin: 0;"></p>
+    </div>
+  </div>
+</section>
 
     </div>
   </main>
@@ -104,43 +99,41 @@
     </div>
   </footer>
 
-  <!-- JS -->
-  <script src="./Password.js"></script>
-  <script>
-    // Pull utilities from global namespace exposed by Password.js
-    const { generatePassword, evaluatePasswordStrength } = window.PasswordUtils || {};
+  <script type="module">
+    // Import logic from Password.js
+    import { generatePassword, evaluatePasswordStrength } from './Password.js';
 
+    // 1. Tab Navigation Logic
     const tabButtons = document.querySelectorAll('.button-group .button');
     const sections = document.querySelectorAll('.content-section');
 
     tabButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         const target = btn.dataset.target;
-
+        
+        // Toggle active sections
         sections.forEach(sec => {
           sec.classList.toggle('active', sec.id === target);
         });
 
+        // Toggle active button state
         tabButtons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
       });
     });
 
-    // ----- Password Generator -----
+    // 2. Password Generator Logic
     const generatorForm = document.getElementById('generator-form');
     const generatedPasswordEl = document.getElementById('generated-password');
 
     generatorForm.addEventListener('submit', (event) => {
       event.preventDefault();
 
-      const length = parseInt(document.getElementById('generator-length').value, 10) || 16;
-      const useLower = document.getElementById('gen-lower').checked;
-      const useUpper = document.getElementById('gen-upper').checked;
-      const useDigits = document.getElementById('gen-digits').checked;
-      const useSymbols = document.getElementById('gen-symbols').checked;
+      const wordCount = parseInt(document.getElementById('word-count').value, 10) || 4;
+      let separator = document.getElementById('separator').value || "-";
 
       try {
-        const password = generatePassword({ length, useUpper, useLower, useDigits, useSymbols });
+        const password = generatePassword({ wordCount, separator });
         generatedPasswordEl.textContent = password;
         generatedPasswordEl.classList.remove('error');
         generatedPasswordEl.classList.add('visible');
@@ -150,22 +143,33 @@
       }
     });
 
-    // ----- Password Strength Checker -----
-    const strengthForm = document.getElementById('strength-form');
+    // 3. Password Strength Checker Logic
     const strengthInput = document.getElementById('strength-password');
     const strengthBar = document.getElementById('strength-bar');
     const strengthLabel = document.getElementById('strength-label');
     const strengthSuggestions = document.getElementById('strength-suggestions');
 
     function updateStrengthView() {
-      const { score, label, suggestions } = evaluatePasswordStrength(strengthInput.value);
+      const passwordValue = strengthInput.value;
+      
+      if (!passwordValue) {
+        strengthBar.style.width = '0%';
+        strengthLabel.textContent = "Start typing to see password strength.";
+        strengthSuggestions.innerHTML = '';
+        return;
+      }
 
+      const { score, label, suggestions } = evaluatePasswordStrength(passwordValue);
+
+      // UI Updates
       const percentages = [0, 25, 50, 75, 100];
       strengthBar.style.width = percentages[score] + '%';
+      
+      // Applies CSS classes like strength-1, strength-2 for colors
       strengthBar.className = 'strength-bar strength-' + score;
-
       strengthLabel.textContent = label;
 
+      // Update Suggestions
       strengthSuggestions.innerHTML = '';
       suggestions.forEach(text => {
         const li = document.createElement('li');
@@ -175,14 +179,58 @@
     }
 
     strengthInput.addEventListener('input', updateStrengthView);
+    //Passswword Breach Detector Logic
+    // 4. Breach Detector Logic (Updated for your new object return)
+const breachForm = document.getElementById('breach-form');
+const breachInput = document.getElementById('breach-password');
+const breachButton = document.getElementById('breach-button');
+const breachResult = document.getElementById('breach-result');
+const breachEmoji = document.getElementById('breach-emoji');
+const breachMessage = document.getElementById('breach-message');
 
-    strengthForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      updateStrengthView();
-    });
+breachForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const password = breachInput.value;
+  
+  // UI Loading State
+  breachButton.textContent = "Searching databases...";
+  breachButton.disabled = true;
+  breachResult.style.display = "none";
 
-    // Prevent default submit for other forms that are not wired to a backend yet
-    document.getElementById('breach-form').addEventListener('submit', (event) => event.preventDefault());
+  try {
+    const result = await checkPasswordBreach(password);
+
+    // Show result container
+    breachResult.style.display = "block";
+    
+    // Set text and emoji from your JS function
+    breachEmoji.textContent = result.emoji || (result.status === "invalid" ? "🤨" : "");
+    breachMessage.textContent = result.message;
+
+    // Apply colors based on status
+    const statusColors = {
+      safe: "#d4edda",        // Green background
+      exposed: "#fff3cd",     // Yellow
+      danger: "#ffe5d0",      // Orange
+      compromised: "#f8d7da", // Red
+      invalid: "#e2e3e5"      // Gray
+    };
+    
+    breachResult.style.backgroundColor = statusColors[result.status];
+    breachResult.style.color = "#333";
+
+  } catch (error) {
+    console.error(error);
+    alert("Could not connect to the breach database. Check your internet.");
+  } finally {
+    breachButton.textContent = "Check Breach Status";
+    breachButton.disabled = false;
+  }
+});
+
+    // Prevent default form behavior for secondary forms
+    document.getElementById('strength-form').addEventListener('submit', (e) => e.preventDefault());
+    document.getElementById('breach-form').addEventListener('submit', (e) => e.preventDefault());
   </script>
 </body>
 </html>
