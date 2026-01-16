@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Password Security Toolkit | Code Guardians</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
 <body>
@@ -12,9 +13,9 @@
     <div class="header-inner">
       <div class="logo">Code<span>Guardians</span></div>
       <nav class="nav">
-        <a href="index.html" class="nav-link">Home</a>
-        <a href="pass.html" class="nav-link active">Password Toolkit</a>
-        <a href="#" class="nav-link disabled">Threat Scanner</a>
+        <a href="/" class="nav-link">Home</a>
+        <a href="/password" class="nav-link active">Password Toolkit</a>
+        <a href="/url-safety" class="nav-link">URL Safety</a>
         <a href="#" class="nav-link disabled">Extension</a>
       </nav>
     </div>
@@ -70,24 +71,25 @@
       </section>
 
       <section class="content-section" id="breach">
-  <div class="card">
-    <h2>Password Breach Detector</h2>
-    <p class="muted">Check if your password has been leaked in a data breach.</p>
-    
-    <form id="breach-form" class="form-grid">
-      <div class="form-row">
-        <label for="breach-password">Password</label>
-        <input id="breach-password" type="password" placeholder="Enter password to check" required>
-      </div>
-      <button type="submit" id="breach-button" class="button full-width">Check Breach Status</button>
-    </form>
+        <div class="card">
+          <h2>Password Breach Detector</h2>
+          <p class="muted">Check if your password has been leaked in a data breach.</p>
 
-    <div id="breach-result" class="breach-output" style="display: none; margin-top: 20px; padding: 15px; border-radius: 8px; text-align: center;">
-      <div id="breach-emoji" style="font-size: 2rem; margin-bottom: 10px;"></div>
-      <p id="breach-message" style="font-weight: bold; margin: 0;"></p>
-    </div>
-  </div>
-</section>
+          <form id="breach-form" class="form-grid">
+            <div class="form-row">
+              <label for="breach-password">Password</label>
+              <input id="breach-password" type="password" placeholder="Enter password to check" required>
+            </div>
+            <button type="submit" id="breach-button" class="button full-width">Check Breach Status</button>
+          </form>
+
+          <div id="breach-result" class="breach-output"
+            style="display: none; margin-top: 20px; padding: 15px; border-radius: 8px; text-align: center;">
+            <div id="breach-emoji" style="font-size: 2rem; margin-bottom: 10px;"></div>
+            <p id="breach-message" style="font-weight: bold; margin: 0;"></p>
+          </div>
+        </div>
+      </section>
 
     </div>
   </main>
@@ -101,7 +103,7 @@
 
   <script type="module">
     // Import logic from Password.js
-    import { generatePassword, evaluatePasswordStrength } from './Password.js';
+    import { generatePassword, evaluatePasswordStrength, checkPasswordBreach } from '/static/js/Password.js';
 
     // 1. Tab Navigation Logic
     const tabButtons = document.querySelectorAll('.button-group .button');
@@ -110,7 +112,7 @@
     tabButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         const target = btn.dataset.target;
-        
+
         // Toggle active sections
         sections.forEach(sec => {
           sec.classList.toggle('active', sec.id === target);
@@ -151,7 +153,7 @@
 
     function updateStrengthView() {
       const passwordValue = strengthInput.value;
-      
+
       if (!passwordValue) {
         strengthBar.style.width = '0%';
         strengthLabel.textContent = "Start typing to see password strength.";
@@ -164,7 +166,7 @@
       // UI Updates
       const percentages = [0, 25, 50, 75, 100];
       strengthBar.style.width = percentages[score] + '%';
-      
+
       // Applies CSS classes like strength-1, strength-2 for colors
       strengthBar.className = 'strength-bar strength-' + score;
       strengthLabel.textContent = label;
@@ -181,56 +183,57 @@
     strengthInput.addEventListener('input', updateStrengthView);
     //Passswword Breach Detector Logic
     // 4. Breach Detector Logic (Updated for your new object return)
-const breachForm = document.getElementById('breach-form');
-const breachInput = document.getElementById('breach-password');
-const breachButton = document.getElementById('breach-button');
-const breachResult = document.getElementById('breach-result');
-const breachEmoji = document.getElementById('breach-emoji');
-const breachMessage = document.getElementById('breach-message');
+    const breachForm = document.getElementById('breach-form');
+    const breachInput = document.getElementById('breach-password');
+    const breachButton = document.getElementById('breach-button');
+    const breachResult = document.getElementById('breach-result');
+    const breachEmoji = document.getElementById('breach-emoji');
+    const breachMessage = document.getElementById('breach-message');
 
-breachForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const password = breachInput.value;
-  
-  // UI Loading State
-  breachButton.textContent = "Searching databases...";
-  breachButton.disabled = true;
-  breachResult.style.display = "none";
+    breachForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const password = breachInput.value;
 
-  try {
-    const result = await checkPasswordBreach(password);
+      // UI Loading State
+      breachButton.textContent = "Searching databases...";
+      breachButton.disabled = true;
+      breachResult.style.display = "none";
 
-    // Show result container
-    breachResult.style.display = "block";
-    
-    // Set text and emoji from your JS function
-    breachEmoji.textContent = result.emoji || (result.status === "invalid" ? "🤨" : "");
-    breachMessage.textContent = result.message;
+      try {
+        const result = await checkPasswordBreach(password);
 
-    // Apply colors based on status
-    const statusColors = {
-      safe: "#d4edda",        // Green background
-      exposed: "#fff3cd",     // Yellow
-      danger: "#ffe5d0",      // Orange
-      compromised: "#f8d7da", // Red
-      invalid: "#e2e3e5"      // Gray
-    };
-    
-    breachResult.style.backgroundColor = statusColors[result.status];
-    breachResult.style.color = "#333";
+        // Show result container
+        breachResult.style.display = "block";
 
-  } catch (error) {
-    console.error(error);
-    alert("Could not connect to the breach database. Check your internet.");
-  } finally {
-    breachButton.textContent = "Check Breach Status";
-    breachButton.disabled = false;
-  }
-});
+        // Set text and emoji from your JS function
+        breachEmoji.textContent = result.emoji || (result.status === "invalid" ? "🤨" : "");
+        breachMessage.textContent = result.message;
+
+        // Apply colors based on status
+        const statusColors = {
+          safe: "#d4edda",        // Green background
+          exposed: "#fff3cd",     // Yellow
+          danger: "#ffe5d0",      // Orange
+          compromised: "#f8d7da", // Red
+          invalid: "#e2e3e5"      // Gray
+        };
+
+        breachResult.style.backgroundColor = statusColors[result.status];
+        breachResult.style.color = "#333";
+
+      } catch (error) {
+        console.error(error);
+        alert("Could not connect to the breach database. Check your internet.");
+      } finally {
+        breachButton.textContent = "Check Breach Status";
+        breachButton.disabled = false;
+      }
+    });
 
     // Prevent default form behavior for secondary forms
     document.getElementById('strength-form').addEventListener('submit', (e) => e.preventDefault());
     document.getElementById('breach-form').addEventListener('submit', (e) => e.preventDefault());
   </script>
 </body>
+
 </html>

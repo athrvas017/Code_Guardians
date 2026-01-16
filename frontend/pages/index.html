@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Code Guardians | Cyber Threat Analysis Toolkit</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
+
 <body>
   <header class="site-header">
     <div class="header-inner">
       <div class="logo">Code<span>Guardians</span></div>
       <nav class="nav">
-        <a href="index.html" class="nav-link active">Home</a>
-        <a href="pass.html" class="nav-link">Password Toolkit</a>
-        <a href="#" class="nav-link disabled">Threat Scanner</a>
+        <a href="/" class="nav-link active">Home</a>
+        <a href="/password" class="nav-link">Password Toolkit</a>
+        <a href="/url-safety" class="nav-link">URL Safety</a>
         <a href="#" class="nav-link disabled">Extension</a>
       </nav>
     </div>
@@ -34,8 +36,8 @@
           </p>
 
           <div class="hero-actions">
-            <a href="pass.html" class="button" style="flex:0 0 auto; width:auto;">Open Password Toolkit</a>
-            <span class="hero-secondary">Other modules are visualized below and will be wired up later.</span>
+            <a href="/password" class="button" style="flex:0 0 auto; width:auto;">Open Password Toolkit</a>
+            <a href="/url-safety" class="button" style="flex:0 0 auto; width:auto;">URL Safety Check</a>
           </div>
         </div>
 
@@ -67,31 +69,36 @@
         <article class="feature-card">
           <div class="feature-tag">Live</div>
           <h2 class="feature-card-title">Image / Audio / Text Detection</h2>
-          <p>Design for multi‑modal threat detection pipelines that can flag malicious or sensitive content across visual, audio, and text channels.</p>
+          <p>Design for multi‑modal threat detection pipelines that can flag malicious or sensitive content across
+            visual, audio, and text channels.</p>
         </article>
 
         <article class="feature-card">
-          <div class="feature-tag soon">Soon</div>
-          <h2 class="feature-card-title">Link &amp; URL Safety Check</h2>
-          <p>Planned integration with Google Safe Browsing to score URLs and reveal phishing, malware, and known‑bad infrastructure.</p>
+          <div class="feature-tag">Live</div>
+          <h2 class="feature-card-title"><a href="/url-safety">Link &amp; URL Safety Check</a></h2>
+          <p>Integration with Google Safe Browsing to score URLs and reveal phishing, malware, and known‑bad
+            infrastructure.</p>
         </article>
 
         <article class="feature-card">
           <div class="feature-tag soon">Soon</div>
           <h2 class="feature-card-title">Terminal Command Analysis</h2>
-          <p>Concept UI for analyzing shell commands before execution to catch destructive or suspicious actions in advance.</p>
+          <p>Concept UI for analyzing shell commands before execution to catch destructive or suspicious actions in
+            advance.</p>
         </article>
 
         <article class="feature-card">
           <div class="feature-tag">Live</div>
-          <h2 class="feature-card-title">Password Strength &amp; Breach View</h2>
-          <p>The password toolkit helps you craft strong secrets and is designed for future Have I Been Pwned breach checks.</p>
+          <h2 class="feature-card-title"><a href="/password">Password Strength &amp; Breach View</a></h2>
+          <p>The password toolkit helps you craft strong secrets and is designed for Have I Been Pwned breach
+            checks.</p>
         </article>
 
         <article class="feature-card">
           <div class="feature-tag soon">Soon</div>
           <h2 class="feature-card-title">Browser Extension Surface</h2>
-          <p>A planned extension surface to bring the same analysis capabilities directly into your browsing session.</p>
+          <p>A planned extension surface to bring the same analysis capabilities directly into your browsing session.
+          </p>
         </article>
       </section>
     </div>
@@ -104,4 +111,5 @@
     </div>
   </footer>
 </body>
+
 </html>

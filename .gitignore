@@ -1,2 +1,6 @@
-sample.html
 .vscode/
+__pycache__/
+tempCodeRunnerFile.py
+structure.txt
+venv/
+.env

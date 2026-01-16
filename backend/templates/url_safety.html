@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Safety Checker | Code Guardians</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .url-cell {
+            max-width: 300px;
+            word-wrap: break-word;
+            word-break: break-all;
+            white-space: normal;
+        }
+
+        .url-checker-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .url-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        .check-button {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .check-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        .result-box {
+            margin-top: 1.5rem;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .result-safe {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            color: #22c55e;
+        }
+
+        .result-danger {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+        }
+
+        .history-section {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .history-title {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: #fff;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .history-table th {
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .history-table td {
+            color: #fff;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-safe {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .page-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo">Code<span>Guardians</span></div>
+            <nav class="nav">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/password" class="nav-link">Password Toolkit</a>
+                <a href="/url-safety" class="nav-link active">URL Safety</a>
+                <a href="#" class="nav-link disabled">Extension</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="page-title">
+                <h1>🔐 URL Safety Checker</h1>
+                <p>Check if a URL is safe using Google Safe Browsing API</p>
+            </div>
+
+            <div class="url-checker-card">
+                <form method="POST">
+                    <input type="text" name="url" class="url-input" placeholder="Enter URL (https://example.com)"
+                        required>
+                    <button type="submit" class="check-button">Check URL Safety</button>
+                </form>
+
+                {% if result %}
+                <div class="result-box {% if result == 'Safe' %}result-safe{% else %}result-danger{% endif %}">
+                    <strong>Result:</strong> {{ result }}
+                </div>
+                {% endif %}
+
+                <div class="history-section">
+                    <h3 class="history-title">📜 Checked History</h3>
+
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>URL</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in history %}
+                            <tr>
+                                <td class="url-cell">{{ item.url }}</td>
+                                <td>
+                                    {% if item.result == 'Safe' %}
+                                    <span class="badge badge-safe">Safe</span>
+                                    {% else %}
+                                    <span class="badge badge-danger">{{ item.result }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <p>Cyber Threat Analysis Toolkit &bull; Code Guardians</p>
+            <p class="footer-meta">URL Safety Detection powered by Google Safe Browsing API</p>
+        </div>
+    </footer>
+</body>
+
+</html>
