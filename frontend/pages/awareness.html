@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Awareness | NetShield</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    /* Awareness Page Specific Styles */
+    .awareness-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .awareness-nav {
+      position: sticky;
+      top: 20px;
+      height: fit-content;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    .awareness-nav h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    .awareness-nav ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .awareness-nav li {
+      margin: 0;
+    }
+
+    .awareness-nav a {
+      display: block;
+      padding: 10px 12px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      border-left: 2px solid transparent;
+    }
+
+    .awareness-nav a:hover,
+    .awareness-nav a.active {
+      color: var(--accent);
+      background: rgba(34, 211, 238, 0.08);
+      border-left-color: var(--accent);
+    }
+
+    .awareness-content {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .awareness-section {
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      border-radius: 16px;
+      padding: 28px;
+      scroll-margin-top: 20px;
+    }
+
+    .awareness-section h2 {
+      font-size: 1.3rem;
+      margin-bottom: 16px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .awareness-section h2 .icon {
+      font-size: 1.5rem;
+    }
+
+    .awareness-section p {
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 14px;
+    }
+
+    .awareness-section ul,
+    .awareness-section ol {
+      color: var(--text-muted);
+      padding-left: 20px;
+      margin-bottom: 14px;
+    }
+
+    .awareness-section li {
+      margin-bottom: 8px;
+      line-height: 1.6;
+    }
+
+    /* Threat Cards */
+    .threat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .threat-card {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 12px;
+      padding: 18px;
+      transition: all 0.25s ease;
+    }
+
+    .threat-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .threat-card .icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+
+    .threat-card h4 {
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    .threat-card p {
+      font-size: 0.82rem;
+      margin: 0;
+    }
+
+    /* Accordion */
+    .accordion {
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      overflow: hidden;
+    }
+
+    .accordion-header {
+      background: rgba(15, 23, 42, 0.7);
+      padding: 14px 18px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: var(--text-main);
+      transition: background 0.2s ease;
+    }
+
+    .accordion-header:hover {
+      background: rgba(34, 211, 238, 0.08);
+    }
+
+    .accordion-header::after {
+      content: "+";
+      font-size: 1.2rem;
+      color: var(--accent);
+      transition: transform 0.3s ease;
+    }
+
+    .accordion.open .accordion-header::after {
+      transform: rotate(45deg);
+    }
+
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease;
+      background: rgba(2, 6, 23, 0.5);
+    }
+
+    .accordion.open .accordion-content {
+      max-height: 500px;
+    }
+
+    .accordion-body {
+      padding: 16px 18px;
+    }
+
+    /* Do's and Don'ts */
+    .dos-donts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: 16px;
+    }
+
+    .dos-column,
+    .donts-column {
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    .dos-column {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.08));
+      border: 1px solid rgba(34, 197, 94, 0.35);
+    }
+
+    .donts-column {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.08));
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+
+    .dos-column h4 {
+      color: #4ade80;
+      margin-bottom: 14px;
+    }
+
+    .donts-column h4 {
+      color: #f87171;
+      margin-bottom: 14px;
+    }
+
+    .dos-column li::marker {
+      color: #4ade80;
+    }
+
+    .donts-column li::marker {
+      color: #f87171;
+    }
+
+    /* Quiz */
+    .quiz-container {
+      margin-top: 20px;
+    }
+
+    .quiz-question {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .quiz-question h4 {
+      color: var(--text-main);
+      margin-bottom: 14px;
+    }
+
+    .quiz-options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .quiz-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: rgba(2, 6, 23, 0.5);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .quiz-option:hover {
+      border-color: var(--accent);
+      background: rgba(34, 211, 238, 0.05);
+    }
+
+    .quiz-option.correct {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.15);
+    }
+
+    .quiz-option.incorrect {
+      border-color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .quiz-option input[type="radio"] {
+      accent-color: var(--accent);
+    }
+
+    .quiz-result {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      display: none;
+    }
+
+    .quiz-result.show {
+      display: block;
+    }
+
+    .quiz-result.good {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.1));
+      border: 1px solid rgba(34, 197, 94, 0.4);
+    }
+
+    .quiz-result.needs-work {
+      background: linear-gradient(135deg, rgba(234, 179, 8, 0.2), rgba(202, 138, 4, 0.1));
+      border: 1px solid rgba(234, 179, 8, 0.4);
+    }
+
+    /* Progress Bar */
+    .progress-container {
+      margin-top: 20px;
+    }
+
+    .progress-bar {
+      height: 10px;
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-secondary), var(--accent));
+      border-radius: 10px;
+      transition: width 0.5s ease;
+    }
+
+    /* Resource Links */
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .resource-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 10px;
+      text-decoration: none;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+
+    .resource-link:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    /* Summary Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: 20px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 12px;
+    }
+
+    .stat-card .number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-card .label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .awareness-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .awareness-nav {
+        position: relative;
+        top: 0;
+      }
+
+      .dos-donts {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <img src="/static/assets/images/netshield_logo.png" alt="NetShield"
+          style="height: 32px; vertical-align: middle; margin-right: 8px;">
+        Net<span>Shield</span>
+      </div>
+      <nav class="nav">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/password" class="nav-link">Password Toolkit</a>
+        <a href="/url-safety" class="nav-link">URL Safety</a>
+        <a href="/phishing" class="nav-link">Phishing Detector</a>
+        <a href="/ai-detection" class="nav-link">AI Detection</a>
+        <a href="/awareness" class="nav-link active">Cyber Awareness</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="awareness-layout">
+      <!-- Sidebar Navigation -->
+      <aside class="awareness-nav">
+        <h3>Quick Navigation</h3>
+        <ul>
+          <li><a href="#overview" class="active">📋 Overview</a></li>
+          <li><a href="#threats">🎯 Common Threats</a></li>
+          <li><a href="#techniques">🔧 Attack Techniques</a></li>
+          <li><a href="#warning-signs">⚠️ Warning Signs</a></li>
+          <li><a href="#safe-practices">🛡️ Safe Practices</a></li>
+          <li><a href="#dos-donts">✅ Do's & Don'ts</a></li>
+          <li><a href="#incident-response">🚨 Incident Response</a></li>
+          <li><a href="#user-responsibility">👤 Your Role</a></li>
+          <li><a href="#our-system">🔍 Our System</a></li>
+          <li><a href="#self-assessment">📝 Self-Assessment</a></li>
+          <li><a href="#resources">📚 Resources</a></li>
+          <li><a href="#summary">📊 Summary</a></li>
+        </ul>
+      </aside>
+
+      <!-- Main Content -->
+      <div class="awareness-content">
+
+        <!-- 1. Awareness Overview -->
+        <section id="overview" class="awareness-section">
+          <h2><span class="icon">🛡️</span> Cyber Security Awareness Overview</h2>
+          <p>
+            In today's digital world, cyber threats are evolving faster than ever. From sophisticated phishing attacks
+            to ransomware that can cripple organizations, staying informed is your first line of defense.
+          </p>
+          <p>
+            This comprehensive guide will equip you with the knowledge to recognize threats, protect your digital
+            identity, and respond effectively to security incidents. Whether you're a casual internet user or a
+            security-conscious professional, these insights will help you navigate the digital landscape safely.
+          </p>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="number">3.4B</div>
+              <div class="label">Phishing Emails Daily</div>
+            </div>
+            <div class="stat-card">
+              <div class="number">95%</div>
+              <div class="label">Attacks from Human Error</div>
+            </div>
+            <div class="stat-card">
+              <div class="number">$4.45M</div>
+              <div class="label">Avg. Breach Cost</div>
+            </div>
+            <div class="stat-card">
+              <div class="number">287</div>
+              <div class="label">Days to Detect Breach</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Common Cyber Threats -->
+        <section id="threats" class="awareness-section">
+          <h2><span class="icon">🎯</span> Common Cyber Threats</h2>
+          <p>Understanding the threats you face is the first step to protecting yourself. Here are the most prevalent
+            cyber threats today:</p>
+
+          <div class="threat-grid">
+            <div class="threat-card">
+              <div class="icon">🎣</div>
+              <h4>Phishing Attacks</h4>
+              <p>Deceptive emails, messages, or websites designed to steal your credentials or personal information.</p>
+            </div>
+            <div class="threat-card">
+              <div class="icon">🔐</div>
+              <h4>Ransomware</h4>
+              <p>Malware that encrypts your files and demands payment for the decryption key.</p>
+            </div>
+            <div class="threat-card">
+              <div class="icon">👤</div>
+              <h4>Identity Theft</h4>
+              <p>Criminals steal personal information to impersonate you for financial gain.</p>
+            </div>
+            <div class="threat-card">
+              <div class="icon">🦠</div>
+              <h4>Malware</h4>
+              <p>Malicious software including viruses, trojans, and spyware that harm your devices.</p>
+            </div>
+            <div class="threat-card">
+              <div class="icon">🤝</div>
+              <h4>Social Engineering</h4>
+              <p>Psychological manipulation techniques to trick people into revealing confidential information.</p>
+            </div>
+            <div class="threat-card">
+              <div class="icon">📡</div>
+              <h4>Man-in-the-Middle</h4>
+              <p>Attackers intercept communications between two parties to steal or manipulate data.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 3. Attack Techniques & Methods -->
+        <section id="techniques" class="awareness-section">
+          <h2><span class="icon">🔧</span> Attack Techniques & Methods</h2>
+          <p>Cybercriminals use various sophisticated techniques. Learn how these attacks work:</p>
+
+          <div class="accordion">
+            <div class="accordion-header">Spear Phishing</div>
+            <div class="accordion-content">
+              <div class="accordion-body">
+                <p>Unlike regular phishing, spear phishing targets specific individuals or organizations. Attackers
+                  research their victims using social media and public information to craft highly personalized and
+                  convincing messages.</p>
+                <p><strong>Example:</strong> An email appearing from your CEO asking you to urgently transfer funds or
+                  share sensitive documents.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion">
+            <div class="accordion-header">Credential Stuffing</div>
+            <div class="accordion-content">
+              <div class="accordion-body">
+                <p>Attackers use leaked username/password combinations from data breaches to try logging into other
+                  services, exploiting password reuse.</p>
+                <p><strong>Prevention:</strong> Use unique passwords for every account and enable two-factor
+                  authentication.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion">
+            <div class="accordion-header">Typosquatting</div>
+            <div class="accordion-content">
+              <div class="accordion-body">
+                <p>Registering domain names similar to popular websites (e.g., "gooogle.com") to capture users who
+                  mistype URLs. These fake sites often look identical to the real ones.</p>
+                <p><strong>Prevention:</strong> Bookmark important sites and always verify the URL before entering
+                  credentials.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion">
+            <div class="accordion-header">Pretexting</div>
+            <div class="accordion-content">
+              <div class="accordion-body">
+                <p>Creating a fabricated scenario (pretext) to engage victims and gain trust. Attackers may pose as IT
+                  support, bank representatives, or coworkers to extract information.</p>
+                <p><strong>Prevention:</strong> Always verify identity through official channels before sharing any
+                  information.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion">
+            <div class="accordion-header">USB Drop Attacks</div>
+            <div class="accordion-content">
+              <div class="accordion-body">
+                <p>Leaving infected USB drives in public places hoping someone will plug them into their computer out of
+                  curiosity.</p>
+                <p><strong>Prevention:</strong> Never plug unknown USB devices into your computer.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. Warning Signs & Red Flags -->
+        <section id="warning-signs" class="awareness-section">
+          <h2><span class="icon">⚠️</span> Warning Signs & Red Flags</h2>
+          <p>Learn to spot these warning signs that indicate a potential cyber attack:</p>
+
+          <ul>
+            <li><strong>Urgency & pressure:</strong> Messages demanding immediate action or threatening consequences
+            </li>
+            <li><strong>Suspicious sender:</strong> Email addresses that don't match the supposed sender's organization
+            </li>
+            <li><strong>Generic greetings:</strong> "Dear Customer" instead of your actual name</li>
+            <li><strong>Spelling & grammar errors:</strong> Legitimate organizations maintain professional communication
+            </li>
+            <li><strong>Unexpected attachments:</strong> Files you weren't expecting, especially .exe, .zip, or
+              macro-enabled documents</li>
+            <li><strong>Requests for sensitive info:</strong> Legitimate organizations rarely ask for passwords via
+              email</li>
+            <li><strong>Suspicious links:</strong> Hover over links before clicking to verify the actual destination
+            </li>
+            <li><strong>Too good to be true:</strong> Lottery wins, inheritances, or unbelievable offers</li>
+            <li><strong>Unusual login alerts:</strong> Notifications about access from unfamiliar locations or devices
+            </li>
+          </ul>
+        </section>
+
+        <!-- 5. Safe Online Practices -->
+        <section id="safe-practices" class="awareness-section">
+          <h2><span class="icon">🛡️</span> Safe Online Practices</h2>
+          <p>Follow these best practices to stay secure online:</p>
+
+          <ol>
+            <li><strong>Use strong, unique passwords:</strong> At least 12 characters with mixed case, numbers, and
+              symbols</li>
+            <li><strong>Enable two-factor authentication (2FA):</strong> Add an extra layer of security to all important
+              accounts</li>
+            <li><strong>Keep software updated:</strong> Install security patches promptly for your OS, browsers, and
+              apps</li>
+            <li><strong>Verify before you click:</strong> Check URLs and sender addresses before clicking links or
+              opening attachments</li>
+            <li><strong>Use secure connections:</strong> Look for HTTPS and avoid public WiFi for sensitive transactions
+            </li>
+            <li><strong>Back up your data:</strong> Regular backups protect you from ransomware and data loss</li>
+            <li><strong>Monitor your accounts:</strong> Regularly check bank statements and credit reports for
+              unauthorized activity</li>
+            <li><strong>Limit personal information sharing:</strong> Be cautious about what you share on social media
+            </li>
+          </ol>
+        </section>
+
+        <!-- 6. Do's and Don'ts -->
+        <section id="dos-donts" class="awareness-section">
+          <h2><span class="icon">✅</span> Do's and Don'ts</h2>
+
+          <div class="dos-donts">
+            <div class="dos-column">
+              <h4>✅ DO</h4>
+              <ul>
+                <li>Use a password manager</li>
+                <li>Verify unexpected requests through official channels</li>
+                <li>Report suspicious emails to IT</li>
+                <li>Lock your devices when away</li>
+                <li>Use VPN on public networks</li>
+                <li>Regularly review privacy settings</li>
+                <li>Enable automatic updates</li>
+                <li>Shred sensitive documents</li>
+              </ul>
+            </div>
+            <div class="donts-column">
+              <h4>❌ DON'T</h4>
+              <ul>
+                <li>Reuse passwords across accounts</li>
+                <li>Click links in unexpected emails</li>
+                <li>Share passwords with anyone</li>
+                <li>Use public WiFi for banking</li>
+                <li>Ignore security warnings</li>
+                <li>Download software from untrusted sources</li>
+                <li>Leave devices unattended in public</li>
+                <li>Overshare on social media</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- 7. Incident Response & Immediate Actions -->
+        <section id="incident-response" class="awareness-section">
+          <h2><span class="icon">🚨</span> Incident Response & Immediate Actions</h2>
+          <p>If you suspect you've been compromised, take these immediate actions:</p>
+
+          <ol>
+            <li><strong>Don't panic:</strong> Quick, calm action is more effective than panicked decisions</li>
+            <li><strong>Disconnect:</strong> If malware is suspected, disconnect from the internet immediately</li>
+            <li><strong>Change passwords:</strong> Start with your email and banking accounts, then work through all
+              accounts</li>
+            <li><strong>Scan for malware:</strong> Run a full antivirus scan on affected devices</li>
+            <li><strong>Check financial accounts:</strong> Review transactions and contact your bank if needed</li>
+            <li><strong>Enable fraud alerts:</strong> Contact credit bureaus to place fraud alerts on your credit file
+            </li>
+            <li><strong>Document everything:</strong> Save screenshots and logs of suspicious activity</li>
+            <li><strong>Report the incident:</strong> Notify IT security, report to relevant authorities (FBI IC3, local
+              police)</li>
+          </ol>
+        </section>
+
+        <!-- 8. User Responsibility in Cybersecurity -->
+        <section id="user-responsibility" class="awareness-section">
+          <h2><span class="icon">👤</span> User Responsibility in Cybersecurity</h2>
+          <p>Security is everyone's responsibility. Here's how you contribute to cybersecurity:</p>
+
+          <ul>
+            <li><strong>Stay informed:</strong> Keep up with the latest threats and security best practices</li>
+            <li><strong>Think before you click:</strong> You are the last line of defense against phishing</li>
+            <li><strong>Speak up:</strong> Report suspicious activities, even if you're unsure</li>
+            <li><strong>Protect company data:</strong> Follow data handling policies and secure sensitive information
+            </li>
+            <li><strong>Secure your workspace:</strong> Lock screens, secure documents, and control physical access</li>
+            <li><strong>Educate others:</strong> Share security knowledge with colleagues, friends, and family</li>
+          </ul>
+        </section>
+
+        <!-- 9. How Our Threat Analysis System Helps -->
+        <section id="our-system" class="awareness-section">
+          <h2><span class="icon">🔍</span> How Our Threat Analysis System Helps</h2>
+          <p>NetShield provides powerful tools to protect you:</p>
+
+          <div class="threat-grid">
+            <div class="threat-card">
+              <div class="icon">🔗</div>
+              <h4>URL Safety Check</h4>
+              <p>Analyzes links against threat databases to identify malicious websites before you visit them.</p>
+            </div>
+            <div class="threat-card">
+              <div class="icon">🔐</div>
+              <h4>Password Toolkit</h4>
+              <p>Generates strong passwords and checks existing ones against known breach databases.</p>
+            </div>
+            <div class="threat-card">
+              <div class="icon">📧</div>
+              <h4>Phishing Detector</h4>
+              <p>Uses ML to analyze emails and messages for phishing indicators and suspicious content.</p>
+            </div>
+            <div class="threat-card">
+              <div class="icon">🛡️</div>
+              <h4>Real-time Protection</h4>
+              <p>Continuous monitoring and analysis to keep you protected against emerging threats.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. Self-Assessment & Awareness Check -->
+        <section id="self-assessment" class="awareness-section">
+          <h2><span class="icon">📝</span> Self-Assessment & Awareness Check</h2>
+          <p>Test your cybersecurity awareness with this quick quiz:</p>
+
+          <div class="quiz-container" id="quiz">
+            <div class="quiz-question" data-correct="b">
+              <h4>1. You receive an urgent email from your bank asking you to verify your account. What should you do?
+              </h4>
+              <div class="quiz-options">
+                <label class="quiz-option">
+                  <input type="radio" name="q1" value="a">
+                  Click the link and enter your details immediately
+                </label>
+                <label class="quiz-option">
+                  <input type="radio" name="q1" value="b">
+                  Contact your bank directly using their official website or phone number
+                </label>
+                <label class="quiz-option">
+                  <input type="radio" name="q1" value="c">
+                  Reply to the email asking for more information
+                </label>
+              </div>
+            </div>
+
+            <div class="quiz-question" data-correct="c">
+              <h4>2. What makes a password strong?</h4>
+              <div class="quiz-options">
+                <label class="quiz-option">
+                  <input type="radio" name="q2" value="a">
+                  Your pet's name followed by 123
+                </label>
+                <label class="quiz-option">
+                  <input type="radio" name="q2" value="b">
+                  A single dictionary word
+                </label>
+                <label class="quiz-option">
+                  <input type="radio" name="q2" value="c">
+                  12+ characters with upper/lowercase, numbers, and symbols
+                </label>
+              </div>
+            </div>
+
+            <div class="quiz-question" data-correct="b">
+              <h4>3. You find a USB drive in the parking lot. What should you do?</h4>
+              <div class="quiz-options">
+                <label class="quiz-option">
+                  <input type="radio" name="q3" value="a">
+                  Plug it into your computer to find the owner
+                </label>
+                <label class="quiz-option">
+                  <input type="radio" name="q3" value="b">
+                  Turn it in to security or IT without plugging it in
+                </label>
+                <label class="quiz-option">
+                  <input type="radio" name="q3" value="c">
+                  Take it home for personal use
+                </label>
+              </div>
+            </div>
+
+            <div class="quiz-question" data-correct="a">
+              <h4>4. What should you do if you accidentally clicked a suspicious link?</h4>
+              <div class="quiz-options">
+                <label class="quiz-option">
+                  <input type="radio" name="q4" value="a">
+                  Disconnect from the internet and run an antivirus scan
+                </label>
+                <label class="quiz-option">
+                  <input type="radio" name="q4" value="b">
+                  Ignore it and hope for the best
+                </label>
+                <label class="quiz-option">
+                  <input type="radio" name="q4" value="c">
+                  Click more links to see what happens
+                </label>
+              </div>
+            </div>
+
+            <button class="button" onclick="checkQuiz()" style="margin-top: 16px;">Submit Answers</button>
+
+            <div class="quiz-result" id="quiz-result">
+              <h3 id="result-title"></h3>
+              <p id="result-message"></p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 11. Resources & Best Practices -->
+        <section id="resources" class="awareness-section">
+          <h2><span class="icon">📚</span> Resources & Best Practices</h2>
+          <p>Continue learning with these trusted resources:</p>
+
+          <div class="resource-grid">
+            <a href="https://www.cisa.gov/cybersecurity" target="_blank" class="resource-link">
+              🏛️ CISA Cybersecurity
+            </a>
+            <a href="https://haveibeenpwned.com/" target="_blank" class="resource-link">
+              🔓 Have I Been Pwned
+            </a>
+            <a href="https://www.sans.org/security-awareness-training" target="_blank" class="resource-link">
+              📖 SANS Security Training
+            </a>
+            <a href="https://www.ncsc.gov.uk/cyberaware" target="_blank" class="resource-link">
+              🇬🇧 NCSC Cyber Aware
+            </a>
+            <a href="https://staysafeonline.org/" target="_blank" class="resource-link">
+              🛡️ Stay Safe Online
+            </a>
+            <a href="https://www.ic3.gov/" target="_blank" class="resource-link">
+              🚔 FBI IC3 Reporting
+            </a>
+          </div>
+        </section>
+
+        <!-- 12. Awareness Summary -->
+        <section id="summary" class="awareness-section">
+          <h2><span class="icon">📊</span> Awareness Summary</h2>
+          <p>Congratulations on completing this cyber awareness guide! Here's a quick recap of the key takeaways:</p>
+
+          <ul>
+            <li><strong>Recognize threats:</strong> Phishing, malware, and social engineering are the most common attack
+              vectors</li>
+            <li><strong>Stay vigilant:</strong> Look for warning signs like urgency, suspicious senders, and unexpected
+              requests</li>
+            <li><strong>Practice good hygiene:</strong> Strong passwords, 2FA, and regular updates are your foundation
+            </li>
+            <li><strong>Respond quickly:</strong> If compromised, disconnect, change passwords, and report immediately
+            </li>
+            <li><strong>Keep learning:</strong> Cyber threats evolve constantly—stay informed and updated</li>
+          </ul>
+
+          <div class="progress-container">
+            <p><strong>Your Cyber Awareness Progress</strong></p>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 100%;"></div>
+            </div>
+            <p style="margin-top: 10px; color: var(--accent);">✅ Guide Completed!</p>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Cyber Threat Analysis Toolkit &bull; NetShield</p>
+      <p class="footer-meta">Stay informed. Stay secure. Stay vigilant.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Smooth scroll for navigation
+    document.querySelectorAll('.awareness-nav a').forEach(link => {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href').slice(1);
+        const target = document.getElementById(targetId);
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+
+          // Update active state
+          document.querySelectorAll('.awareness-nav a').forEach(l => l.classList.remove('active'));
+          this.classList.add('active');
+        }
+      });
+    });
+
+    // Intersection Observer for active nav state
+    const sections = document.querySelectorAll('.awareness-section');
+    const navLinks = document.querySelectorAll('.awareness-nav a');
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').slice(1) === entry.target.id) {
+              link.classList.add('active');
+            }
+          });
+        }
+      });
+    }, { threshold: 0.3 });
+
+    sections.forEach(section => observer.observe(section));
+
+    // Accordion functionality
+    document.querySelectorAll('.accordion-header').forEach(header => {
+      header.addEventListener('click', function () {
+        const accordion = this.parentElement;
+        accordion.classList.toggle('open');
+      });
+    });
+
+    // Quiz functionality
+    function checkQuiz() {
+      const questions = document.querySelectorAll('.quiz-question');
+      let correct = 0;
+
+      questions.forEach(q => {
+        const correctAnswer = q.dataset.correct;
+        const selected = q.querySelector('input:checked');
+
+        // Reset styles
+        q.querySelectorAll('.quiz-option').forEach(opt => {
+          opt.classList.remove('correct', 'incorrect');
+        });
+
+        if (selected) {
+          const selectedOption = selected.closest('.quiz-option');
+          if (selected.value === correctAnswer) {
+            correct++;
+            selectedOption.classList.add('correct');
+          } else {
+            selectedOption.classList.add('incorrect');
+            // Show correct answer
+            q.querySelectorAll('.quiz-option').forEach(opt => {
+              if (opt.querySelector('input').value === correctAnswer) {
+                opt.classList.add('correct');
+              }
+            });
+          }
+        }
+      });
+
+      const result = document.getElementById('quiz-result');
+      const title = document.getElementById('result-title');
+      const message = document.getElementById('result-message');
+
+      result.classList.add('show');
+
+      if (correct === questions.length) {
+        result.className = 'quiz-result show good';
+        title.textContent = '🎉 Perfect Score!';
+        message.textContent = 'You have excellent cyber awareness! Keep up the great work.';
+      } else if (correct >= questions.length / 2) {
+        result.className = 'quiz-result show good';
+        title.textContent = `✅ Good Job! ${correct}/${questions.length}`;
+        message.textContent = 'You have a solid understanding. Review the sections for topics you missed.';
+      } else {
+        result.className = 'quiz-result show needs-work';
+        title.textContent = `📚 Keep Learning! ${correct}/${questions.length}`;
+        message.textContent = 'Review the guide above to strengthen your cyber awareness skills.';
+      }
+    }
+  </script>
+</body>
+
+</html>

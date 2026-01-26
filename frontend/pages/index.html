@@ -3,19 +3,28 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Code Guardians | Cyber Threat Analysis Toolkit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="NetShield - A comprehensive cyber threat analysis toolkit for modern defenders. Analyze passwords, URLs, and detect phishing attacks.">
+  <title>NetShield | Cyber Threat Analysis Toolkit</title>
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
 <body>
   <header class="site-header">
     <div class="header-inner">
-      <div class="logo">Code<span>Guardians</span></div>
+      <div class="logo">
+        <img src="/static/assets/images/netshield_logo.png" alt="NetShield"
+          style="height: 32px; vertical-align: middle; margin-right: 8px;">
+        Net<span>Shield</span>
+      </div>
       <nav class="nav">
         <a href="/" class="nav-link active">Home</a>
         <a href="/password" class="nav-link">Password Toolkit</a>
         <a href="/url-safety" class="nav-link">URL Safety</a>
-        <a href="#" class="nav-link disabled">Extension</a>
+        <a href="/phishing" class="nav-link">Phishing Detector</a>
+        <a href="/ai-detection" class="nav-link">AI Detection</a>
+        <a href="/awareness" class="nav-link">Cyber Awareness</a>
       </nav>
     </div>
   </header>
@@ -26,18 +35,19 @@
         <div class="hero-copy">
           <div class="hero-badge">
             <span class="hero-badge-dot"></span>
-            Live Cyber Threat Analysis Prototype
+            Advanced Cyber Threat Analysis Platform
           </div>
-          <h1>See your digital surface the way attackers do.</h1>
+          <h1>Your AI-Powered Shield Against Digital Threats</h1>
           <p>
-            Code Guardians is a cyber threat analysis toolkit designed for modern defenders.
-            Explore how images, audio, text, links, terminal commands and passwords can be
-            inspected for risk in a single, cohesive interface.
+            NetShield is your comprehensive cybersecurity command center. Detect AI-generated
+            deepfakes, expose phishing attacks, analyze suspicious URLs, and fortify your passwords—all
+            powered by cutting-edge machine learning in one unified platform.
           </p>
 
           <div class="hero-actions">
-            <a href="/password" class="button" style="flex:0 0 auto; width:auto;">Open Password Toolkit</a>
-            <a href="/url-safety" class="button" style="flex:0 0 auto; width:auto;">URL Safety Check</a>
+            <a href="/ai-detection" class="button" style="flex:0 0 auto; width:auto;">🔍 AI Image Detection</a>
+            <a href="/phishing" class="button" style="flex:0 0 auto; width:auto;">🎣 Phishing Detector</a>
+            <a href="/password" class="button" style="flex:0 0 auto; width:auto;">🔐 Password Toolkit</a>
           </div>
         </div>
 
@@ -68,9 +78,9 @@
       <section class="feature-grid" aria-label="Cyber Threat Analysis Features">
         <article class="feature-card">
           <div class="feature-tag">Live</div>
-          <h2 class="feature-card-title">Image / Audio / Text Detection</h2>
-          <p>Design for multi‑modal threat detection pipelines that can flag malicious or sensitive content across
-            visual, audio, and text channels.</p>
+          <h2 class="feature-card-title"><a href="/ai-detection">🔍 AI Image Detection</a></h2>
+          <p>Detect AI-generated images, deepfakes, and synthetic content using advanced deep learning. Protect yourself
+            from misinformation and fake profiles.</p>
         </article>
 
         <article class="feature-card">
@@ -95,9 +105,16 @@
         </article>
 
         <article class="feature-card">
-          <div class="feature-tag soon">Soon</div>
-          <h2 class="feature-card-title">Browser Extension Surface</h2>
-          <p>A planned extension surface to bring the same analysis capabilities directly into your browsing session.
+          <div class="feature-tag">Live</div>
+          <h2 class="feature-card-title"><a href="/phishing">Phishing Email Detector</a></h2>
+          <p>ML-powered analysis to detect phishing emails and suspicious messages with URL safety scanning.
+          </p>
+        </article>
+
+        <article class="feature-card">
+          <div class="feature-tag">Live</div>
+          <h2 class="feature-card-title"><a href="/awareness">Cyber Awareness Guide</a></h2>
+          <p>Interactive educational content covering threats, best practices, and a self-assessment quiz.
           </p>
         </article>
       </section>
@@ -106,7 +123,7 @@
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <p>Cyber Threat Analysis Toolkit &bull; Code Guardians</p>
+      <p>Cyber Threat Analysis Toolkit &bull; NetShield</p>
       <p class="footer-meta">This is the design shell. Detection engines and API integrations will be wired in next.</p>
     </div>
   </footer>

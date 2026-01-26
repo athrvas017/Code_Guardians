@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phishing Detector | NetShield</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo">
+                <img src="/static/assets/images/netshield_logo.png" alt="NetShield"
+                    style="height: 32px; vertical-align: middle; margin-right: 8px;">
+                Net<span>Shield</span>
+            </div>
+            <nav class="nav">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/password" class="nav-link">Password Toolkit</a>
+                <a href="/url-safety" class="nav-link">URL Safety</a>
+                <a href="/phishing" class="nav-link active">Phishing Detector</a>
+                <a href="/ai-detection" class="nav-link">AI Detection</a>
+                <a href="/awareness" class="nav-link">Cyber Awareness</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="card">
+                <h2>📧 Phishing Email & Message Detector</h2>
+                <p class="muted">Paste an email or message content to analyze it for phishing indicators using our
+                    ML-powered detection system.</p>
+
+                <form id="phishing-form" class="form-grid" method="POST">
+                    <div class="form-row">
+                        <label for="message">Email or Message Content</label>
+                        <textarea id="message" name="message" rows="8"
+                            placeholder="Paste the suspicious email or message content here..."
+                            required>{{ request.form.get('message', '') if request else '' }}</textarea>
+                    </div>
+
+                    <button type="submit" class="button full-width" id="analyze-btn">
+                        🔍 Analyze for Phishing
+                    </button>
+                </form>
+
+                {% if result %}
+                <div id="result-container" style="margin-top: 20px;">
+                    <div class="password-output visible {% if 'Phishing' in result %}error{% endif %}">
+                        <div style="font-size: 1.3rem; margin-bottom: 10px;">
+                            {% if 'Phishing' in result %}⚠️ Phishing Detected{% else %}✅ Safe Message{% endif %}
+                        </div>
+                        <div>{{ result }}</div>
+                    </div>
+
+                    {% if url_results %}
+                    <div style="margin-top: 16px;">
+                        <h3 style="font-size: 0.9rem; margin-bottom: 10px; color: var(--text-muted);">🔗 URLs Found in
+                            Message</h3>
+                        {% for u in url_results %}
+                        <div
+                            style="background: rgba(15, 23, 42, 0.8); padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; border: 1px solid {% if u.status == 'Unsafe' %}rgba(239, 68, 68, 0.5){% else %}rgba(34, 197, 94, 0.5){% endif %}; font-size: 0.85rem; word-break: break-all;">
+                            <span style="color: {% if u.status == 'Unsafe' %}#f87171{% else %}#4ade80{% endif %};">
+                                {% if u.status == 'Unsafe' %}⚠️{% else %}✅{% endif %}
+                            </span>
+                            {{ u.url }} - <strong>{{ u.status }}</strong>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Detection Tips Card -->
+            <div class="card" style="margin-top: 20px;">
+                <h2>💡 Quick Phishing Detection Tips</h2>
+                <div class="feature-grid" style="margin-top: 16px;">
+                    <div class="feature-card">
+                        <div class="feature-tag">Check</div>
+                        <h3 class="feature-card-title">Sender Address</h3>
+                        <p>Verify the email address matches the claimed organization</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-tag">Check</div>
+                        <h3 class="feature-card-title">Urgency Tactics</h3>
+                        <p>Be suspicious of urgent requests for immediate action</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-tag">Check</div>
+                        <h3 class="feature-card-title">Link Preview</h3>
+                        <p>Hover over links to see the actual destination URL</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-tag">Check</div>
+                        <h3 class="feature-card-title">Grammar & Spelling</h3>
+                        <p>Poor language quality often indicates phishing</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <p>Cyber Threat Analysis Toolkit &bull; NetShield</p>
+            <p class="footer-meta">ML-powered phishing detection with URL safety analysis.</p>
+        </div>
+    </footer>
+</body>
+
+</html>

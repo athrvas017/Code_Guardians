@@ -40,3 +40,22 @@ def check_url_safety(url, google_key):
         return "Malicious (Google Safe Browsing)"
 
     return "Safe"
+
+def check_url_Safety(url, api_key):
+    if not validators.url(url):
+        return "Invalid URL"
+
+    api_url = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={api_key}"
+
+    payload = {
+        "client": {"clientId": "phishing-app", "clientVersion": "1.0"},
+        "threatInfo": {
+            "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING"],
+            "platformTypes": ["ANY_PLATFORM"],
+            "threatEntryTypes": ["URL"],
+            "threatEntries": [{"url": url}]
+        }
+    }
+
+    r = requests.post(api_url, json=payload)
+    return "Unsafe" if r.json() else "Safe"

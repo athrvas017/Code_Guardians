@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="AI Image Detection - Detect whether an image is real or AI-generated using advanced deep learning models.">
+  <title>AI Image Detection | NetShield</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    /* AI Detection Specific Styles */
+    .upload-zone {
+      border: 2px dashed rgba(148, 163, 184, 0.55);
+      border-radius: 16px;
+      padding: 40px 20px;
+      text-align: center;
+      background: rgba(15, 23, 42, 0.6);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      border-color: var(--accent);
+      background: rgba(34, 211, 238, 0.08);
+      transform: translateY(-2px);
+    }
+
+    .upload-zone input[type="file"] {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+      opacity: 0.7;
+    }
+
+    .upload-text {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .upload-text strong {
+      color: var(--accent);
+    }
+
+    .preview-container {
+      display: none;
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .preview-container.visible {
+      display: block;
+      animation: fadeIn 0.35s ease forwards;
+    }
+
+    .preview-image {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.45);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+
+    .result-card {
+      display: none;
+      margin-top: 24px;
+      padding: 24px;
+      border-radius: 16px;
+      text-align: center;
+      animation: fadeIn 0.35s ease forwards;
+    }
+
+    .result-card.visible {
+      display: block;
+    }
+
+    .result-card.real {
+      background: linear-gradient(135deg, rgba(22, 163, 74, 0.25), rgba(16, 185, 129, 0.15));
+      border: 1px solid rgba(34, 197, 94, 0.5);
+    }
+
+    .result-card.ai-generated {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(249, 115, 22, 0.15));
+      border: 1px solid rgba(248, 113, 113, 0.5);
+    }
+
+    .result-icon {
+      font-size: 3.5rem;
+      margin-bottom: 12px;
+    }
+
+    .result-label {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .result-card.real .result-label {
+      color: #4ade80;
+    }
+
+    .result-card.ai-generated .result-label {
+      color: #f97316;
+    }
+
+    .confidence-bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      margin-top: 16px;
+      overflow: hidden;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      border-radius: inherit;
+      transition: width 0.5s ease;
+    }
+
+    .confidence-fill.real {
+      background: linear-gradient(90deg, #22c55e, #10b981);
+    }
+
+    .confidence-fill.ai-generated {
+      background: linear-gradient(90deg, #f97316, #ef4444);
+    }
+
+    .confidence-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .info-section {
+      margin-top: 28px;
+      padding: 20px;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .info-section h3 {
+      font-size: 1rem;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+
+    .info-section p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .info-item {
+      padding: 14px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    .info-item-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .info-item-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .loading-spinner {
+      display: none;
+      margin: 20px auto;
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(148, 163, 184, 0.3);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-spinner.visible {
+      display: block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <img src="/static/assets/images/netshield_logo.png" alt="NetShield"
+          style="height: 32px; vertical-align: middle; margin-right: 8px;">
+        Net<span>Shield</span>
+      </div>
+      <nav class="nav">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/password" class="nav-link">Password Toolkit</a>
+        <a href="/url-safety" class="nav-link">URL Safety</a>
+        <a href="/phishing" class="nav-link">Phishing Detector</a>
+        <a href="/ai-detection" class="nav-link active">AI Detection</a>
+        <a href="/awareness" class="nav-link">Cyber Awareness</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="container">
+      <div class="card">
+        <h2>🔍 AI Image Detection</h2>
+        <p class="muted">Upload an image to detect whether it's a real photograph or AI-generated content.</p>
+
+        <!-- Upload Zone -->
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" id="image-input" accept="image/*">
+          <div class="upload-icon">📷</div>
+          <p class="upload-text">
+            <strong>Click to upload</strong> or drag and drop<br>
+            <span style="font-size: 0.8rem;">PNG, JPG, JPEG up to 10MB</span>
+          </p>
+        </div>
+
+        <!-- Image Preview -->
+        <div class="preview-container" id="preview-container">
+          <img src="" alt="Preview" class="preview-image" id="preview-image">
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner" id="loading-spinner"></div>
+
+        <!-- Analysis Button -->
+        <button class="button full-width" id="analyze-btn" style="display: none; margin-top: 16px;">
+          🧠 Analyze Image
+        </button>
+
+        <!-- Result Card -->
+        <div class="result-card" id="result-card">
+          <div class="result-icon" id="result-icon"></div>
+          <div class="result-label" id="result-label"></div>
+          <p class="muted" id="result-description"></p>
+
+          <div class="confidence-bar">
+            <div class="confidence-fill" id="confidence-fill"></div>
+          </div>
+          <p class="confidence-text" id="confidence-text"></p>
+        </div>
+      </div>
+
+      <!-- Info Section -->
+      <div class="info-section">
+        <h3>🛡️ How It Works</h3>
+        <p>
+          Our AI detection model uses deep learning (EfficientNet-B0) trained on thousands of real and AI-generated
+          images to identify synthetic content. This helps detect deepfakes, AI-generated art, and manipulated photos.
+        </p>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-item-title">Model</div>
+            <div class="info-item-value">EfficientNet-B0</div>
+          </div>
+          <div class="info-item">
+            <div class="info-item-title">Detection Types</div>
+            <div class="info-item-value">Real vs AI-Generated</div>
+          </div>
+          <div class="info-item">
+            <div class="info-item-title">Accuracy</div>
+            <div class="info-item-value">~95% on test set</div>
+          </div>
+          <div class="info-item">
+            <div class="info-item-title">Processing</div>
+            <div class="info-item-value">Local / Server-side</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Use Cases -->
+      <div class="info-section" style="margin-top: 16px;">
+        <h3>💡 Use Cases</h3>
+        <p>
+          <strong>Misinformation Detection:</strong> Identify fake news images and deepfakes before sharing.<br>
+          <strong>Content Verification:</strong> Verify authenticity of photos for journalism or legal purposes.<br>
+          <strong>Social Media Safety:</strong> Detect AI-generated profile pictures and scam content.<br>
+          <strong>Digital Forensics:</strong> Analyze suspicious images in cybersecurity investigations.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Cyber Threat Analysis Toolkit &bull; NetShield</p>
+      <p class="footer-meta">AI-powered image authenticity detection using deep learning.</p>
+    </div>
+  </footer>
+
+  <script>
+    // DOM Elements
+    const uploadZone = document.getElementById('upload-zone');
+    const imageInput = document.getElementById('image-input');
+    const previewContainer = document.getElementById('preview-container');
+    const previewImage = document.getElementById('preview-image');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const resultCard = document.getElementById('result-card');
+    const resultIcon = document.getElementById('result-icon');
+    const resultLabel = document.getElementById('result-label');
+    const resultDescription = document.getElementById('result-description');
+    const confidenceFill = document.getElementById('confidence-fill');
+    const confidenceText = document.getElementById('confidence-text');
+
+    let selectedFile = null;
+
+    // Drag and Drop handlers
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFileSelect(files[0]);
+      }
+    });
+
+    // File input change handler
+    imageInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFileSelect(e.target.files[0]);
+      }
+    });
+
+    function handleFileSelect(file) {
+      if (!file.type.startsWith('image/')) {
+        alert('Please select a valid image file.');
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size must be less than 10MB.');
+        return;
+      }
+
+      selectedFile = file;
+
+      // Show preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImage.src = e.target.result;
+        previewContainer.classList.add('visible');
+        analyzeBtn.style.display = 'block';
+        resultCard.classList.remove('visible');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Analyze button click
+    analyzeBtn.addEventListener('click', async () => {
+      if (!selectedFile) return;
+
+      // Show loading state
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = '🔄 Analyzing...';
+      loadingSpinner.classList.add('visible');
+      resultCard.classList.remove('visible');
+
+      try {
+        // Simulate API call (replace with actual backend endpoint)
+        // Call actual backend endpoint
+        const result = await analyzeImage();
+        displayResult(result);
+      } catch (error) {
+        console.error('Analysis failed:', error);
+        alert('Analysis failed. Please try again.');
+      } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = '🧠 Analyze Image';
+        loadingSpinner.classList.remove('visible');
+      }
+    });
+
+    // simulateAnalysis removed - using real backend
+
+    // For actual backend integration, use this:
+
+    async function analyzeImage() {
+      const formData = new FormData();
+      formData.append('image', selectedFile);
+
+      const response = await fetch('/ai-detection', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Analysis failed');
+      }
+
+      return await response.json();
+    }
+
+
+    function displayResult(result) {
+      const isReal = result.prediction === 'real';
+
+      // Update result card
+      resultCard.className = `result-card visible ${isReal ? 'real' : 'ai-generated'}`;
+      resultIcon.textContent = isReal ? '✅' : '🤖';
+      resultLabel.textContent = isReal ? 'Real Image' : 'AI-Generated Image';
+      resultDescription.textContent = isReal
+        ? 'This image appears to be an authentic photograph.'
+        : 'This image shows signs of being AI-generated or synthetically created.';
+
+      // Update confidence bar
+      confidenceFill.className = `confidence-fill ${isReal ? 'real' : 'ai-generated'}`;
+      confidenceFill.style.width = `${result.confidence}%`;
+      confidenceText.textContent = `Confidence: ${result.confidence.toFixed(1)}%`;
+    }
+  </script>
+</body>
+
+</html>

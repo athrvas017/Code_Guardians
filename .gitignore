@@ -4,3 +4,24 @@ tempCodeRunnerFile.py
 structure.txt
 venv/
 .env
+env/
+.DS_Store
+*.db
+*.sqlite3
+DEPLOYMENT.md
+# Python artifacts
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Scripts and specific unwanted files
+scripts/
+backend/instance/
+backend/uploads/
+
+# # AI Model Files
+# *.h5
+# *.pth
+# *.onnx
+# *.pt

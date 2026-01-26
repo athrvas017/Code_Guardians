@@ -10,7 +10,6 @@ backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, backend_dir)
 
 from flask import Blueprint, render_template, request
-from models import db, URLCheck
 from .safety_services import check_url_safety
 
 # Set template folder to backend/templates
@@ -24,20 +23,8 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 def url_safety():
     result = None
 
-    # user_id comes from existing login system
-    user_id = 1  
-
     if request.method == "POST":
         url = request.form["url"]
         result = check_url_safety(url, GOOGLE_API_KEY)
 
-        record = URLCheck(
-            url=url,
-            result=result,
-            user_id=user_id
-        )
-        db.session.add(record)
-        db.session.commit()
-
-    history = URLCheck.query.filter_by(user_id=user_id).all()
-    return render_template("url_safety.html", result=result, history=history)
+    return render_template("url_safety.html", result=result)
