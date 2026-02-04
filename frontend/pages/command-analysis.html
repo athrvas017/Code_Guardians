@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Terminal Command Analysis - Analyze shell commands for security risks and suspicious patterns.">
+  <title>Command Analysis | NetShield</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    .input-zone {
+      border: 2px solid rgba(148, 163, 184, 0.55);
+      border-radius: 16px;
+      padding: 24px;
+      background: rgba(15, 23, 42, 0.6);
+      transition: all 0.3s ease;
+    }
+
+    .input-zone:focus-within {
+      border-color: var(--accent);
+      background: rgba(34, 211, 238, 0.08);
+      box-shadow: 0 0 20px rgba(34, 211, 238, 0.15);
+    }
+
+    .command-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      border-radius: 10px;
+      color: var(--text-main);
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 0.95rem;
+      resize: vertical;
+      min-height: 80px;
+      transition: all 0.3s ease;
+    }
+
+    .command-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(34, 211, 238, 0.05);
+    }
+
+    .command-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .input-label {
+      display: block;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .result-card {
+      display: none;
+      margin-top: 24px;
+      padding: 24px;
+      border-radius: 16px;
+      animation: fadeIn 0.35s ease forwards;
+    }
+
+    .result-card.visible {
+      display: block;
+    }
+
+    .result-card.safe {
+      background: linear-gradient(135deg, rgba(22, 163, 74, 0.25), rgba(16, 185, 129, 0.15));
+      border: 1px solid rgba(34, 197, 94, 0.5);
+    }
+
+    .result-card.dangerous {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(249, 115, 22, 0.15));
+      border: 1px solid rgba(248, 113, 113, 0.5);
+    }
+
+    .result-card.suspicious {
+      background: linear-gradient(135deg, rgba(217, 119, 6, 0.25), rgba(251, 146, 60, 0.15));
+      border: 1px solid rgba(251, 146, 60, 0.5);
+    }
+
+    .result-icon {
+      font-size: 3.5rem;
+      margin-bottom: 12px;
+    }
+
+    .result-label {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .result-card.safe .result-label {
+      color: #4ade80;
+    }
+
+    .result-card.dangerous .result-label {
+      color: #f97316;
+    }
+
+    .result-card.suspicious .result-label {
+      color: #d97706;
+    }
+
+    .confidence-bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.8);
+      margin-top: 16px;
+      overflow: hidden;
+    }
+
+    .confidence-fill {
+      height: 100%;
+      border-radius: inherit;
+      transition: width 0.5s ease;
+    }
+
+    .confidence-fill.safe {
+      background: linear-gradient(90deg, #22c55e, #10b981);
+    }
+
+    .confidence-fill.dangerous {
+      background: linear-gradient(90deg, #f97316, #ef4444);
+    }
+
+    .confidence-fill.suspicious {
+      background: linear-gradient(90deg, #d97706, #f97316);
+    }
+
+    .confidence-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .details-section {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .details-title {
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+
+    .detail-item {
+      padding: 12px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      background: rgba(148, 163, 184, 0.1);
+      border-left: 3px solid var(--accent);
+      font-size: 0.9rem;
+    }
+
+    .detail-item-type {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .detail-item-desc {
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .detail-item-pattern {
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      padding: 6px 8px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+      word-break: break-all;
+    }
+
+    .info-section {
+      margin-top: 28px;
+      padding: 20px;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .info-section h3 {
+      font-size: 1rem;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+
+    .info-section p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .info-item {
+      padding: 14px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    .info-item-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .info-item-value {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    .loading-spinner {
+      display: none;
+      margin: 20px auto;
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(148, 163, 184, 0.3);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-spinner.visible {
+      display: block;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+
+  </style>
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <img src="/static/assets/images/netshield_logo.png" alt="NetShield"
+          style="height: 32px; vertical-align: middle; margin-right: 8px;">
+        Net<span>Shield</span>
+      </div>
+      <nav class="nav">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/password" class="nav-link">Password Toolkit</a>
+        <a href="/url-safety" class="nav-link">URL Safety</a>
+        <a href="/phishing" class="nav-link">Phishing Detector</a>
+        <a href="/ai-detection" class="nav-link">AI Detection</a>
+        <a href="/command-analysis" class="nav-link active">Command Analysis</a>
+        <a href="/awareness" class="nav-link">Cyber Awareness</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <div class="container">
+      <div class="card">
+        <h2>Terminal Command Analysis</h2>
+        <p class="muted">Analyze shell commands for security risks, malicious patterns, and dangerous operations before execution.</p>
+
+        <div class="input-zone">
+          <label class="input-label" for="command-input">Enter Command</label>
+          <textarea class="command-input" id="command-input" placeholder="Paste or type the command you want to analyze..." spellcheck="false"></textarea>
+        </div>
+
+    
+        <button class="button full-width" id="analyze-btn" style="margin-top: 16px;">
+          Analyze Command
+        </button>
+
+        
+        <div class="loading-spinner" id="loading-spinner"></div>
+
+        
+        <div class="result-card" id="result-card">
+          <div class="result-icon" id="result-icon"></div>
+          <div class="result-label" id="result-label"></div>
+          <p class="muted" id="result-message"></p>
+
+          <div class="confidence-bar">
+            <div class="confidence-fill" id="confidence-fill"></div>
+          </div>
+          <p class="confidence-text" id="confidence-text"></p>
+
+          
+          <div class="details-section" id="details-section" style="display: none;">
+            <div class="details-title" id="details-title">🔎 Analysis Details</div>
+            <div id="details-list"></div>
+          </div>
+        </div>
+      </div>
+
+      
+      <div class="info-section">
+        <h3>How It Works</h3>
+        <p>
+          Our command analyzer uses pattern recognition to detect dangerous operations, suspicious shell patterns,
+          code injection attempts, and malicious behaviors. It checks for known dangerous commands, reverse shells,
+          and code obfuscation techniques.
+        </p>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="info-item-title">Detection Types</div>
+            <div class="info-item-value">6+ Pattern Types</div>
+          </div>
+          <div class="info-item">
+            <div class="info-item-title">Risk Levels</div>
+            <div class="info-item-value">Safe, Suspicious, Dangerous</div>
+          </div>
+          <div class="info-item">
+            <div class="info-item-title">Analysis Speed</div>
+            <div class="info-item-value">Real-time</div>
+          </div>
+          <div class="info-item">
+            <div class="info-item-title">Accuracy</div>
+            <div class="info-item-value">Pattern-based</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Risk Categories -->
+      <div class="info-section" style="margin-top: 16px;">
+        <h3>⚠️ Risk Categories Detected</h3>
+        <p>
+          <strong>Dangerous Commands:</strong> File deletion (rm, dd), filesystem operations (mkfs), and privilege escalation.<br>
+          <strong>Suspicious Patterns:</strong> Reverse shells, remote code execution, command substitution, and output hiding.<br>
+          <strong>Code Injection:</strong> Command chaining, pipe operations, and encoded commands.<br>
+          <strong>System Attacks:</strong> Fork bombs and infinite loops that can crash systems.
+        </p>
+      </div>
+
+      <!-- Use Cases -->
+      <div class="info-section" style="margin-top: 16px;">
+        <h3>💡 Use Cases</h3>
+        <p>
+          <strong>System Administration:</strong> Verify commands before running in production environments.<br>
+          <strong>Security Training:</strong> Learn about dangerous patterns and malicious command structures.<br>
+          <strong>DevOps/CI/CD:</strong> Validate scripts and automation commands for safety.<br>
+          <strong>Security Research:</strong> Analyze suspicious commands found in logs or threat intelligence.<br>
+          <strong>User Protection:</strong> Check commands shared in forums, tutorials, or documentation.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>Cyber Threat Analysis Toolkit &bull; NetShield</p>
+      <p class="footer-meta">Advanced terminal command security analysis for safer system administration.</p>
+    </div>
+  </footer>
+
+  <script>
+    // DOM Elements
+    const commandInput = document.getElementById('command-input');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const resultCard = document.getElementById('result-card');
+    const resultIcon = document.getElementById('result-icon');
+    const resultLabel = document.getElementById('result-label');
+    const resultMessage = document.getElementById('result-message');
+    const confidenceFill = document.getElementById('confidence-fill');
+    const confidenceText = document.getElementById('confidence-text');
+    const detailsSection = document.getElementById('details-section');
+    const detailsList = document.getElementById('details-list');
+
+    // Auto-focus input on page load
+    window.addEventListener('load', () => {
+      commandInput.focus();
+    });
+
+    // Analyze button click
+    analyzeBtn.addEventListener('click', async () => {
+      const command = commandInput.value.trim();
+      
+      if (!command) {
+        alert('Please enter a command to analyze.');
+        return;
+      }
+
+      // Show loading state
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = '🔄 Analyzing...';
+      loadingSpinner.classList.add('visible');
+      resultCard.classList.remove('visible');
+
+      try {
+        const result = await analyzeCommand(command);
+        displayResult(result);
+      } catch (error) {
+        console.error('Analysis failed:', error);
+        alert('Analysis failed. Please try again.');
+      } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = '🔍 Analyze Command';
+        loadingSpinner.classList.remove('visible');
+      }
+    });
+
+    // Allow Enter+Ctrl to analyze
+    commandInput.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        analyzeBtn.click();
+      }
+    });
+
+    async function analyzeCommand(command) {
+      const response = await fetch('/command-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ command: command })
+      });
+
+      if (!response.ok) {
+        throw new Error('Analysis failed');
+      }
+
+      return await response.json();
+    }
+
+    function displayResult(result) {
+      const isSafe = result.prediction === 'safe';
+      const riskLevel = result.risk_level || 'safe';
+
+      // Update result card
+      resultCard.className = `result-card visible ${riskLevel}`;
+      
+      // Set icon and label based on risk level
+      const iconMap = {
+        'safe': '✅',
+        'dangerous': '🚫',
+        'suspicious': '⚠️',
+        'critical': '⛔'
+      };
+      
+      const labelMap = {
+        'safe': 'Safe to Execute',
+        'dangerous': 'Dangerous Command',
+        'suspicious': 'Suspicious Pattern',
+        'critical': 'Critical Risk'
+      };
+      
+      resultIcon.textContent = iconMap[riskLevel] || '❓';
+      resultLabel.textContent = labelMap[riskLevel] || 'Unknown';
+      resultMessage.textContent = result.message;
+
+      // Update confidence bar
+      confidenceFill.className = `confidence-fill ${riskLevel}`;
+      confidenceFill.style.width = `${Math.min(result.confidence, 100)}%`;
+      confidenceText.textContent = `Safety Score: ${result.confidence.toFixed(1)}%`;
+
+      // Update details section
+      if (result.details && result.details.length > 0) {
+        detailsSection.style.display = 'block';
+        detailsList.innerHTML = '';
+        
+        result.details.forEach(detail => {
+          const detailItem = document.createElement('div');
+          detailItem.className = 'detail-item';
+          
+          let html = `
+            <div class="detail-item-type">${detail.type.replace(/_/g, ' ')}</div>
+            <div class="detail-item-desc">${detail.description}</div>
+          `;
+          
+          if (detail.pattern) {
+            html += `<div class="detail-item-pattern">${detail.pattern}</div>`;
+          }
+          
+          detailItem.innerHTML = html;
+          detailsList.appendChild(detailItem);
+        });
+      } else {
+        detailsSection.style.display = 'none';
+      }
+    }
+
+  </script>
+</body>
+
+</html>
