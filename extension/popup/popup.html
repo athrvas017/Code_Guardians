@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetShield Security</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="popup-container">
+    <!-- Header -->
+    <header class="popup-header">
+      <div class="logo">
+        <span class="logo-icon">🛡️</span>
+        <span class="logo-text">Net<span class="accent">Shield</span></span>
+      </div>
+      <span class="version">v1.0</span>
+    </header>
+
+    <!-- Tab Navigation -->
+    <nav class="tab-nav">
+      <button class="tab-btn active" data-tab="password">
+        🔐 Password
+      </button>
+      <button class="tab-btn" data-tab="phishing">
+        🎣 Phishing
+      </button>
+    </nav>
+
+    <!-- Password Generator Tab -->
+    <section id="password-tab" class="tab-content active">
+      <div class="section-card">
+        <h3>Generate Secure Password</h3>
+        <div class="form-group">
+          <label for="word-count">Word Count</label>
+          <div class="slider-container">
+            <input type="range" id="word-count" min="4" max="10" value="6">
+            <span id="word-count-display">6</span>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="separator">Separator</label>
+          <select id="separator">
+            <option value="-">Dash (-)</option>
+            <option value="_">Underscore (_)</option>
+            <option value=".">Dot (.)</option>
+            <option value=" ">Space</option>
+          </select>
+        </div>
+
+        <button id="generate-btn" class="primary-btn">
+          ⚡ Generate Password
+        </button>
+
+        <div id="password-output" class="password-output hidden">
+          <div class="password-text" id="generated-password"></div>
+          <button id="copy-btn" class="icon-btn" title="Copy to clipboard">📋</button>
+        </div>
+
+        <div id="strength-meter" class="strength-section hidden">
+          <div class="strength-bar-container">
+            <div id="strength-bar" class="strength-bar"></div>
+          </div>
+          <p id="strength-label" class="strength-label"></p>
+          <p id="entropy-info" class="entropy-info"></p>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <p class="tip">💡 <strong>Tip:</strong> Passphrase passwords are easier to remember and harder to crack!</p>
+      </div>
+    </section>
+
+    <!-- Phishing Scanner Tab -->
+    <section id="phishing-tab" class="tab-content">
+      <div class="section-card">
+        <h3>Scan for Phishing</h3>
+        <p class="description">Analyze email content for phishing indicators and suspicious links.</p>
+        
+        <div class="form-group">
+          <label for="email-content">Paste Email Content</label>
+          <textarea id="email-content" rows="6" placeholder="Paste the suspicious email content here..."></textarea>
+        </div>
+
+        <button id="scan-btn" class="primary-btn">
+          🔍 Analyze Email
+        </button>
+
+        <button id="scan-page-btn" class="secondary-btn">
+          📧 Scan Current Page
+        </button>
+      </div>
+
+      <div id="scan-result" class="result-card hidden">
+        <div id="result-header" class="result-header">
+          <span id="result-icon" class="result-icon"></span>
+          <span id="result-text" class="result-text"></span>
+        </div>
+        <div id="result-details" class="result-details"></div>
+      </div>
+
+      <div id="url-results" class="url-results hidden">
+        <h4>🔗 URLs Found</h4>
+        <ul id="url-list" class="url-list"></ul>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="popup-footer">
+      <span>Powered by NetShield</span>
+      <a href="https://netshield.app" target="_blank" class="footer-link">Learn More</a>
+    </footer>
+  </div>
+
+  <script src="popup.js" type="module"></script>
+</body>
+</html>

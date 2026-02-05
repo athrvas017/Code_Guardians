@@ -1,5 +1,6 @@
 import requests
 import validators
+from .url_ml_service import check_url_ml
 
 BLACKLIST = [
     "phishing-site.com",
@@ -11,6 +12,9 @@ def blacklist_check(url):
     return any(site in url for site in BLACKLIST)
 
 def google_safe_browsing(url, api_key):
+    if not api_key:
+        return False
+        
     api_url = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={api_key}"
 
     payload = {
@@ -26,36 +30,55 @@ def google_safe_browsing(url, api_key):
         }
     }
 
-    response = requests.post(api_url, json=payload)
-    return response.json() != {}
+    try:
+        response = requests.post(api_url, json=payload)
+        return response.json() != {}
+    except:
+        return False
 
 def check_url_safety(url, google_key):
+    """
+    Hybrid check: ML Model + Google Safe Browsing
+    Returns a tuple or string (depending on usage, here we return a detailed string for the UI)
+    """
     if not validators.url(url):
-        return "Invalid URL"
+        return "❌ Invalid URL"
 
+    # 1. Blacklist Check
     if blacklist_check(url):
-        return "Blacklisted URL"
+        return "⛔ Blacklisted URL"
 
-    if google_safe_browsing(url, google_key):
-        return "Malicious (Google Safe Browsing)"
+    # 2. ML Model Check (Local & Fast)
+    ml_result = check_url_ml(url)
+    
+    # 3. Google Safe Browsing (API)
+    api_result = "✅ Safe (Google API)"
+    if google_key:
+        if google_safe_browsing(url, google_key):
+            api_result = "🚨 Unsafe (Google Safe Browsing)"
+    else:
+        api_result = "⚠️ Google API Key Missing"
 
-    return "Safe"
+    # Combine results
+    if "Phishing" in ml_result or "Unsafe" in api_result or "Blacklisted" in ml_result:
+        return f"{ml_result} | {api_result}"
+    
+    return "✅ Safe URL (Verified by ML & Google API)"
 
 def check_url_Safety(url, api_key):
+    """
+    Internal simplified check for other services (returns simple Unsafe/Safe)
+    """
     if not validators.url(url):
         return "Invalid URL"
+        
+    # Check ML first (fast)
+    ml_result = check_url_ml(url)
+    if "Phishing" in ml_result:
+        return "Unsafe"
 
-    api_url = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={api_key}"
+    # Check API
+    if api_key and google_safe_browsing(url, api_key):
+        return "Unsafe"
 
-    payload = {
-        "client": {"clientId": "phishing-app", "clientVersion": "1.0"},
-        "threatInfo": {
-            "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING"],
-            "platformTypes": ["ANY_PLATFORM"],
-            "threatEntryTypes": ["URL"],
-            "threatEntries": [{"url": url}]
-        }
-    }
-
-    r = requests.post(api_url, json=payload)
-    return "Unsafe" if r.json() else "Safe"
+    return "Safe"
