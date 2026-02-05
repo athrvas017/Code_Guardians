@@ -94,5 +94,27 @@ def ai_detection():
                 os.remove(filepath)
             return {"error": str(e)}, 500
 
+
+
+# Terminal Command Analysis Route
+@app.route("/command-analysis", methods=["GET", "POST"])
+def command_analysis():
+    if request.method == "GET":
+        return send_from_directory(os.path.join(frontend_dir, 'pages'), 'command-analysis.html')
+    
+    # POST - Analyze command
+    try:
+        from services.command_analyzer import analyze_terminal_command
+        data = request.get_json()
+        command = data.get("command", "").strip()
+        
+        if not command:
+            return {"error": "No command provided"}, 400
+        
+        result = analyze_terminal_command(command)
+        return result
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 if __name__ == "__main__":
     app.run(debug=True)
