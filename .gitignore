@@ -19,7 +19,8 @@ DEPLOYMENT.md
 scripts/
 backend/instance/
 backend/uploads/
-
+backend/data/
+feature.md
 # # AI Model Files
 # *.h5
 # *.pth

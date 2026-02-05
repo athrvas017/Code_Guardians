@@ -1,0 +1,61 @@
+{
+    "manifest_version": 3,
+    "name": "NetShield Security",
+    "version": "1.0.0",
+    "description": "Protect yourself with password generation and phishing email detection powered by NetShield",
+    "permissions": [
+        "activeTab",
+        "storage",
+        "contextMenus"
+    ],
+    "host_permissions": [
+        "https://*.google.com/*",
+        "https://*.gmail.com/*",
+        "https://*.outlook.com/*",
+        "https://*.outlook.live.com/*",
+        "https://*.yahoo.com/*"
+    ],
+    "action": {
+        "default_popup": "popup/popup.html",
+        "default_icon": {
+            "16": "icons/icon16.png",
+            "48": "icons/icon48.png",
+            "128": "icons/icon128.png"
+        },
+        "default_title": "NetShield Security"
+    },
+    "icons": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+    },
+    "background": {
+        "service_worker": "background/service_worker.js",
+        "type": "module"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "content/password_detector.js"
+            ],
+            "css": [
+                "content/password_popup.css"
+            ],
+            "run_at": "document_idle"
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "icons/*",
+                "utils/*"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ]
+}

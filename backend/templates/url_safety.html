@@ -180,7 +180,7 @@
                 </form>
 
                 {% if result %}
-                <div class="result-box {% if result == 'Safe' %}result-safe{% else %}result-danger{% endif %}">
+                <div class="result-box {% if 'Safe' in result and not 'Unsafe' in result and not 'Phishing' in result and not 'Blacklisted' in result %}result-safe{% else %}result-danger{% endif %}">
                     <strong>Result:</strong> {{ result }}
                 </div>
                 {% endif %}
