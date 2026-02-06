@@ -1,6 +1,9 @@
 import os
 from flask import Flask, render_template, request, send_from_directory
 from services.url_safety import url_safety_bp
+from services.phishing_service import detect_phishing
+from services.ai_image_detection import detect_image, init_model
+from services.command_analyzer import analyze_terminal_command
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -14,6 +17,11 @@ app = Flask(__name__,
             static_folder=frontend_dir,
             static_url_path='/static',
             template_folder=os.path.join(backend_dir, 'templates'))
+
+# Initialize models at startup (for Gunicorn preload)
+print("Loading models...")
+init_model()
+print("Models loaded.")
 
 # Basic config
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "testkey")
@@ -42,7 +50,6 @@ def phishing():
 
     if request.method == "POST":
         try:
-            from services.phishing_service import detect_phishing
             text = request.form.get("message", "")
             if text and GOOGLE_API_KEY:
                 result, url_results = detect_phishing(text, GOOGLE_API_KEY)
@@ -81,7 +88,6 @@ def ai_detection():
         file.save(filepath)
 
         try:
-            from services.ai_image_detection import detect_image
             result = detect_image(filepath)
             
             # Clean up
@@ -104,7 +110,6 @@ def command_analysis():
     
     # POST - Analyze command
     try:
-        from services.command_analyzer import analyze_terminal_command
         data = request.get_json()
         command = data.get("command", "").strip()
         

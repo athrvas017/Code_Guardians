@@ -138,12 +138,24 @@ class AIDetector:
             return {"error": str(e)}
 
 
-# Lazy-initialized global instance (model loads on first use, not on import)
+# Lazy-initialized global instance, but supports explicit initialization
 _detector = None
+
+def init_model():
+    """Explicitly initialize the model. Call this at application startup."""
+    global _detector
+    if _detector is None:
+        print("Initializing AI Image Detector...")
+        _detector = AIDetector()
+        # Force model load
+        if _detector._ensure_model_loaded():
+            print("AI Image Detector initialized successfully.")
+        else:
+            print("WARNING: AI Image Detector failed to initialize.")
 
 def detect_image(image_path):
     """Main entry point for AI image detection"""
     global _detector
     if _detector is None:
-        _detector = AIDetector()
+        init_model()
     return _detector.predict(image_path)
