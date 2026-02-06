@@ -37,21 +37,15 @@ def google_safe_browsing(url, api_key):
         return False
 
 def check_url_safety(url, google_key):
-    """
-    Hybrid check: ML Model + Google Safe Browsing
-    Returns a tuple or string (depending on usage, here we return a detailed string for the UI)
-    """
+    
     if not validators.url(url):
         return "❌ Invalid URL"
 
-    # 1. Blacklist Check
     if blacklist_check(url):
         return "⛔ Blacklisted URL"
 
-    # 2. ML Model Check (Local & Fast)
     ml_result = check_url_ml(url)
     
-    # 3. Google Safe Browsing (API)
     api_result = "✅ Safe (Google API)"
     if google_key:
         if google_safe_browsing(url, google_key):
@@ -59,25 +53,20 @@ def check_url_safety(url, google_key):
     else:
         api_result = "⚠️ Google API Key Missing"
 
-    # Combine results
     if "Phishing" in ml_result or "Unsafe" in api_result or "Blacklisted" in ml_result:
         return f"{ml_result} | {api_result}"
     
     return "✅ Safe URL (Verified by ML & Google API)"
 
 def check_url_Safety(url, api_key):
-    """
-    Internal simplified check for other services (returns simple Unsafe/Safe)
-    """
+   
     if not validators.url(url):
         return "Invalid URL"
         
-    # Check ML first (fast)
     ml_result = check_url_ml(url)
     if "Phishing" in ml_result:
         return "Unsafe"
 
-    # Check API
     if api_key and google_safe_browsing(url, api_key):
         return "Unsafe"
 
