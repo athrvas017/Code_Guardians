@@ -4,13 +4,10 @@ import pandas as pd
 import validators
 from .url_features import build_feature_matrix
 
-# Load trained model
-# Assuming this file is in backend/services/, model is in backend/model/
 _here = os.path.dirname(os.path.abspath(__file__))
 _backend_dir = os.path.dirname(_here)
 _model_dir = os.path.join(_backend_dir, "model")
 
-# Lazy loading to avoid circular import issues or load on startup if preferred
 model = None
 vectorizer = None
 

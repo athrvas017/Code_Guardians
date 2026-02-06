@@ -6,10 +6,6 @@ import pandas as pd
 from scipy.sparse import csr_matrix, hstack
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-
-# -------------------------
-# URL feature engineering
-# -------------------------
 SUSPICIOUS_KEYWORDS = [
     "login", "verify", "secure", "account", "update", "free", "bonus", "win",
     "bank", "password", "signin", "support", "security", "confirm"
@@ -27,7 +23,6 @@ KNOWN_LEGIT_DOMAINS = {
 BRAND_DOMAINS = [
     "google", "facebook", "amazon", "microsoft", "paypal", "youtube"
 ]
-
 
 def _levenshtein(a: str, b: str) -> int:
     if a == b:
