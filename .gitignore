@@ -2,12 +2,4 @@ __pycache__/
 venv/
 .env
 env/
-# Python artifacts
-*.pyc
-*.pyo
-*.pyd
-.Python
-# Dataset and specific unwanted files
-backend/instance/
-backend/uploads/
-backend/data/
+

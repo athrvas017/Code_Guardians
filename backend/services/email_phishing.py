@@ -1,11 +1,12 @@
 from flask import Blueprint, render_template, request
 import re
 import joblib
+from dotenv import load_dotenv
 from safety_services import check_url_safety
 
 email_phishing_bp = Blueprint("email_phishing", __name__)
 
-GOOGLE_API_KEY = "PASTE_GOOGLE_API_KEY"
+GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 model = joblib.load("spam_model.pkl")
 vectorizer = joblib.load("vectorizer.pkl")

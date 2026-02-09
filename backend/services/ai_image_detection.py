@@ -1,160 +1,80 @@
-import torch
-import torch.nn as nn
-from torchvision import transforms
-from PIL import Image
 import os
-import gc
+from gradio_client import Client, handle_file
+from dotenv import load_dotenv
 
-# Configuration
-MODEL_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'model', 'ai_detector_efficientnet.pth')
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# Load environment variables from .env
+load_dotenv()
 
-# Memory-safe constants
-MAX_IMAGE_SIZE = 1024  # Max dimension in pixels
-MAX_FILE_SIZE_MB = 10  # Max file size in MB
+HF_API_URL = os.getenv("HF_API_URL")
+HF_API_TOKEN = os.getenv("HF_API_TOKEN")
 
 
 class AIDetector:
     def __init__(self):
-        self.model = None
-        self._model_loaded = False
+        self.client = None
+        self._client_loaded = False
+        self.api_url = HF_API_URL
+        self.api_token = HF_API_TOKEN
 
-    def _ensure_model_loaded(self):
-        """Lazy load model only when needed to avoid memory spike on import"""
-        if self._model_loaded:
-            return self.model is not None
-            
+    def _ensure_client_loaded(self):
+        """Lazy load the Gradio client"""
+        if self._client_loaded:
+            return self.client is not None
+
         try:
-            import timm
-            
-            # Initialize model architecture (EfficientNet-B0)
-            self.model = timm.create_model('efficientnet_b0', pretrained=False, num_classes=2)
-            
-            if os.path.exists(MODEL_PATH):
-                # Load with weights_only=True for security and memory efficiency
-                state_dict = torch.load(MODEL_PATH, map_location=DEVICE, weights_only=True)
-                self.model.load_state_dict(state_dict)
-                self.model.to(DEVICE)
-                self.model.eval()
-                print(f"Model loaded successfully from {MODEL_PATH}")
-            else:
-                print(f"Model file not found at {MODEL_PATH}")
-                self.model = None
+            if not self.api_url:
+                print("ERROR: HF_API_URL not set in .env")
+                return False
+
+            print(f"Connecting to AI Detector Space at {self.api_url}...")
+
+            # ✅ FIXED: use `token=` instead of `hf_token=`
+            self.client = Client(self.api_url, token=self.api_token)
+
+            print("Connected to AI Detector Space successfully.")
+            self._client_loaded = True
+            return True
 
         except Exception as e:
-            print(f"Error loading model: {e}")
-            self.model = None
-        finally:
-            self._model_loaded = True
-            
-        return self.model is not None
-
-    def _resize_image_if_needed(self, image):
-        """
-        Memory-safe resize: limit image to MAX_IMAGE_SIZE on longest side.
-        This prevents memory exhaustion with very large images.
-        """
-        width, height = image.size
-        max_dim = max(width, height)
-        
-        if max_dim > MAX_IMAGE_SIZE:
-            ratio = MAX_IMAGE_SIZE / max_dim
-            new_width = int(width * ratio)
-            new_height = int(height * ratio)
-            image = image.resize((new_width, new_height), Image.Resampling.LANCZOS)
-            print(f"Resized image from {width}x{height} to {new_width}x{new_height}")
-            
-        return image
-
-    def _validate_file(self, image_path):
-        """Validate file size before processing"""
-        if not os.path.exists(image_path):
-            return False, "Image file not found"
-            
-        file_size_mb = os.path.getsize(image_path) / (1024 * 1024)
-        if file_size_mb > MAX_FILE_SIZE_MB:
-            return False, f"File too large ({file_size_mb:.1f}MB). Maximum allowed: {MAX_FILE_SIZE_MB}MB"
-            
-        return True, None
+            print(f"Error connecting to HF Space: {e}")
+            self.client = None
+            return False
 
     def predict(self, image_path):
-        # Validate file first
-        valid, error = self._validate_file(image_path)
-        if not valid:
-            return {"error": error}
-        
-        # Lazy load model
-        if not self._ensure_model_loaded():
-            return {"error": "Model not loaded. Please check server logs."}
+        """Send image to Hugging Face Space for prediction"""
+
+        if not os.path.exists(image_path):
+            return {"error": "Image file not found"}
+
+        if not self._ensure_client_loaded():
+            return {"error": "Could not connect to AI Detection Service."}
 
         try:
-            # Open and resize image for memory safety
-            image = Image.open(image_path).convert('RGB')
-            image = self._resize_image_if_needed(image)
-            
-            # Preprocessing - transforms.Resize expects (H, W) format
-            transform = transforms.Compose([
-                transforms.Resize((224, 224)),
-                transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-            ])
-
-            input_tensor = transform(image).unsqueeze(0).to(DEVICE)
-            
-            # Close PIL image to free memory
-            image.close()
-
-            with torch.no_grad():
-                output = self.model(input_tensor)
-                probabilities = torch.nn.functional.softmax(output[0], dim=0)
-                
-                # Class 0 = Real, Class 1 = AI Generated
-                conf_real = probabilities[0].item() * 100
-                conf_ai = probabilities[1].item() * 100
-                
-                prediction = "ai_generated" if conf_ai > conf_real else "real"
-                confidence = conf_ai if prediction == "ai_generated" else conf_real
-
-                result = {
-                    "prediction": prediction,
-                    "confidence": round(confidence, 2),
-                    "probabilities": {
-                        "real": round(conf_real, 2),
-                        "ai_generated": round(conf_ai, 2)
-                    }
-                }
-
-            # Cleanup tensors to free memory
-            del input_tensor, output, probabilities
-            if DEVICE.type == "cuda":
-                torch.cuda.empty_cache()
-            gc.collect()
-
+            result = self.client.predict(
+                image=handle_file(image_path),
+                api_name="/predict"  # default endpoint for Gradio Interface
+            )
             return result
 
         except Exception as e:
-            # Cleanup on error
-            gc.collect()
+            print(f"Prediction error: {e}")
             return {"error": str(e)}
 
 
-# Lazy-initialized global instance, but supports explicit initialization
+# Lazy global instance
 _detector = None
 
+
 def init_model():
-    """Explicitly initialize the model. Call this at application startup."""
+    """Initialize detector once at app startup"""
     global _detector
     if _detector is None:
-        print("Initializing AI Image Detector...")
         _detector = AIDetector()
-        # Force model load
-        if _detector._ensure_model_loaded():
-            print("AI Image Detector initialized successfully.")
-        else:
-            print("WARNING: AI Image Detector failed to initialize.")
+        _detector._ensure_client_loaded()
+
 
 def detect_image(image_path):
-    """Main entry point for AI image detection"""
+    """Main function your app should call"""
     global _detector
     if _detector is None:
         init_model()
