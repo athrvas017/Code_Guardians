@@ -55,6 +55,11 @@ class AIDetector:
                 api_name="/predict"  # default endpoint for Gradio Interface
             )
             
+            # Ensure result is a dictionary
+            if not isinstance(result, dict):
+                print(f"Unexpected response type from HF: {type(result)}")
+                return {"error": "Invalid response from AI detection service"}
+
             # Reformat output to match requested JSON structure
             formatted_result = {
                 "prediction": result.get("prediction"),
