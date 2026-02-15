@@ -1,4 +1,5 @@
 # NetShield - Main Application Entry Point
+import os
 from flask import Flask, render_template, request, send_from_directory
 from services.url_safety import url_safety_bp
 from services.phishing_service import detect_phishing
