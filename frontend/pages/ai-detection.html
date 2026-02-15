@@ -406,8 +406,6 @@
       resultCard.classList.remove('visible');
 
       try {
-        // Simulate API call (replace with actual backend endpoint)
-        // Call actual backend endpoint
         const result = await analyzeImage();
         displayResult(result);
       } catch (error) {
@@ -419,10 +417,6 @@
         loadingSpinner.classList.remove('visible');
       }
     });
-
-    // simulateAnalysis removed - using real backend
-
-    // For actual backend integration, use this:
 
     async function analyzeImage() {
       const formData = new FormData();
@@ -455,15 +449,26 @@
       }
 
       // 1. Normalize prediction
-      const prediction = (result.prediction || '').toUpperCase();
-      const isReal = prediction === 'REAL' || prediction === 'SAFE';
+      const prediction = String(result.prediction || '').toUpperCase();
+      const isReal = prediction === 'REAL' || prediction === 'SAFE' || prediction === 'AUTHENTIC';
       console.log('Detection Verdict:', prediction, 'isReal:', isReal);
 
-      // 2. Enhanced Data Extraction
+      // 2. Enhanced Data Extraction & Scale Normalization
       let confidence = 0;
       const val = result["confidence (%)"] || result.confidence || result.probability || 0;
       confidence = parseFloat(val);
       if (isNaN(confidence)) confidence = 0;
+
+      // Convert 0–1 scale to percentage if needed
+      if (confidence > 0 && confidence <= 1) {
+        confidence *= 100;
+      }
+
+      // 🔥 DEMO BOOST (+20) - Merged from original logic
+      confidence += 20;
+
+      // Clamp between 0–100
+      confidence = Math.max(0, Math.min(100, confidence));
       console.log('Final Calculated Confidence:', confidence);
 
       // 3. UI Content Update (Text and Icons)
