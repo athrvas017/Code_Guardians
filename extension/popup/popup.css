@@ -56,6 +56,13 @@ body {
 
 .logo-icon {
   font-size: 1.4rem;
+  display: none;
+}
+
+.logo-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
 }
 
 .logo-text {
