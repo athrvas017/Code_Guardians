@@ -125,8 +125,12 @@
 
     .confidence-fill {
       height: 100%;
+      width: 0%;
       border-radius: inherit;
-      transition: width 0.5s ease;
+      background: var(--accent);
+      /* Fallback color */
+      transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+      /* Bounce effect for visibility */
     }
 
     .confidence-fill.real {
@@ -441,33 +445,51 @@
       console.log('AI Detection Result:', result);
 
       if (result.error) {
-        resultCard.className = 'result-card visible ai-generated'; // Orange/Red warning style
+        resultCard.className = 'result-card visible ai-generated';
         resultIcon.textContent = '❌';
         resultLabel.textContent = 'Service Error';
         resultDescription.textContent = result.error;
         confidenceFill.style.width = '0%';
-        confidenceText.textContent = 'N/A';
+        confidenceText.textContent = 'Service Unreachable';
         return;
       }
 
-      const prediction = (result.prediction || '').toLowerCase();
-      const isReal = prediction === 'real' || prediction === 'safe';
+      // 1. Normalize prediction
+      const prediction = (result.prediction || '').toUpperCase();
+      const isReal = prediction === 'REAL' || prediction === 'SAFE';
+      console.log('Detection Verdict:', prediction, 'isReal:', isReal);
 
-      // Handle different possible key names for confidence
-      const confidence = result["confidence (%)"] || result.confidence || 0;
+      // 2. Enhanced Data Extraction
+      let confidence = 0;
+      const val = result["confidence (%)"] || result.confidence || result.probability || 0;
+      confidence = parseFloat(val);
+      if (isNaN(confidence)) confidence = 0;
+      console.log('Final Calculated Confidence:', confidence);
 
-      // Update result card
+      // 3. UI Content Update (Text and Icons)
       resultCard.className = `result-card visible ${isReal ? 'real' : 'ai-generated'}`;
       resultIcon.textContent = isReal ? '✅' : '🤖';
       resultLabel.textContent = isReal ? 'Real Image' : 'AI-Generated Image';
       resultDescription.textContent = isReal
         ? 'This image appears to be an authentic photograph.'
-        : 'This image shows signs of being AI-generated or synthetically created.';
+        : 'This image shows signs of being AI-generated.';
 
-      // Update confidence bar
+      // 4. Force Bar Reset
       confidenceFill.className = `confidence-fill ${isReal ? 'real' : 'ai-generated'}`;
-      confidenceFill.style.width = `${confidence}%`;
-      confidenceText.textContent = `Confidence: ${parseFloat(confidence).toFixed(1)}%`;
+      confidenceFill.style.transition = 'none'; // Disable transition for reset
+      confidenceFill.style.width = '0%';
+      confidenceText.textContent = 'Analyzing patterns...';
+
+      // 5. Trigger Reflow and Animate
+      // Double rAF is the most reliable way to ensure the 0% state is painted
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          confidenceFill.style.transition = ''; // Restore transition from CSS
+          confidenceFill.style.width = `${confidence}%`;
+          confidenceText.textContent = `Confidence: ${confidence.toFixed(1)}%`;
+          console.log('Animation Triggered to:', confidence + '%');
+        });
+      });
     }
   </script>
 </body>
