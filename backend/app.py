@@ -1,4 +1,4 @@
-import os
+# NetShield - Main Application Entry Point
 from flask import Flask, render_template, request, send_from_directory
 from services.url_safety import url_safety_bp
 from services.phishing_service import detect_phishing
@@ -90,14 +90,21 @@ def ai_detection():
         try:
             result = detect_image(filepath)
             
-            # Clean up
-            if os.path.exists(filepath):
-                os.remove(filepath)
+            # Safe clean up - don't let cleanup failure mask the result
+            try:
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+            except Exception as e_clean:
+                print(f"Cleanup error (ignored): {e_clean}")
                 
             return result
         except Exception as e:
-            if os.path.exists(filepath):
-                os.remove(filepath)
+            # Final attempt at cleanup in case of detection failure
+            try:
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+            except:
+                pass
             return {"error": str(e)}, 500
 
 
