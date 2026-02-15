@@ -54,7 +54,15 @@ class AIDetector:
                 image=handle_file(image_path),
                 api_name="/predict"  # default endpoint for Gradio Interface
             )
-            return result
+            
+            # Reformat output to match requested JSON structure
+            formatted_result = {
+                "prediction": result.get("prediction"),
+                "confidence (%)": result.get("confidence"),
+                "real_probability (%)": result.get("real_probability"),
+                "fake_probability (%)": result.get("fake_probability")
+            }
+            return formatted_result
 
         except Exception as e:
             print(f"Prediction error: {e}")
