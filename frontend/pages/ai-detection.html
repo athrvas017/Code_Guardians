@@ -438,9 +438,23 @@
 
 
     function displayResult(result) {
+      console.log('AI Detection Result:', result);
+
+      if (result.error) {
+        resultCard.className = 'result-card visible ai-generated'; // Orange/Red warning style
+        resultIcon.textContent = '❌';
+        resultLabel.textContent = 'Service Error';
+        resultDescription.textContent = result.error;
+        confidenceFill.style.width = '0%';
+        confidenceText.textContent = 'N/A';
+        return;
+      }
+
       const prediction = (result.prediction || '').toLowerCase();
-      const isReal = prediction === 'real';
-      const confidence = result["confidence (%)"] || 0;
+      const isReal = prediction === 'real' || prediction === 'safe';
+
+      // Handle different possible key names for confidence
+      const confidence = result["confidence (%)"] || result.confidence || 0;
 
       // Update result card
       resultCard.className = `result-card visible ${isReal ? 'real' : 'ai-generated'}`;
@@ -453,7 +467,7 @@
       // Update confidence bar
       confidenceFill.className = `confidence-fill ${isReal ? 'real' : 'ai-generated'}`;
       confidenceFill.style.width = `${confidence}%`;
-      confidenceText.textContent = `Confidence: ${confidence.toFixed(1)}%`;
+      confidenceText.textContent = `Confidence: ${parseFloat(confidence).toFixed(1)}%`;
     }
   </script>
 </body>
