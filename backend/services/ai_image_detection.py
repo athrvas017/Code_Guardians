@@ -2,7 +2,6 @@ import os
 from gradio_client import Client, handle_file
 from dotenv import load_dotenv
 
-# Load environment variables from .env
 load_dotenv()
 
 HF_API_URL = os.getenv("HF_API_URL")
@@ -17,32 +16,26 @@ class AIDetector:
         self.api_token = HF_API_TOKEN
 
     def _ensure_client_loaded(self):
-        """Lazy load the Gradio client"""
         if self._client_loaded:
             return self.client is not None
 
         try:
             if not self.api_url:
-                print("ERROR: HF_API_URL not set in .env")
+                print("HF_API_URL not set")
                 return False
 
-            print(f"Connecting to AI Detector Space at {self.api_url}...")
-
-            # ✅ FIXED: use `token=` instead of `hf_token=`
+            print(f"Connecting to {self.api_url}")
             self.client = Client(self.api_url, token=self.api_token)
-
-            print("Connected to AI Detector Space successfully.")
             self._client_loaded = True
+            print("Connected successfully")
             return True
 
         except Exception as e:
-            print(f"Error connecting to HF Space: {e}")
+            print("Connection error:", e)
             self.client = None
             return False
 
     def predict(self, image_path):
-        """Send image to Hugging Face Space for prediction"""
-
         if not os.path.exists(image_path):
             return {"error": "Image file not found"}
 
@@ -52,34 +45,39 @@ class AIDetector:
         try:
             result = self.client.predict(
                 image=handle_file(image_path),
-                api_name="/predict"  # default endpoint for Gradio Interface
+                api_name="/predict"
             )
-            
-            # Ensure result is a dictionary
+
+            print("RAW HF RESULT:", result)
+
             if not isinstance(result, dict):
-                print(f"Unexpected response type from HF: {type(result)}")
                 return {"error": "Invalid response from AI detection service"}
 
-            # Reformat output to match requested JSON structure
-            formatted_result = {
-                "prediction": result.get("prediction"),
-                "confidence (%)": result.get("confidence"),
-                "real_probability (%)": result.get("real_probability"),
-                "fake_probability (%)": result.get("fake_probability")
+            prediction = result.get("prediction")
+
+            # 🔥 FIX: pull correct key from HF
+            confidence = (
+                result.get("confidence")
+                or result.get("confidence (%)")
+                or result.get("real_probability (%)")
+                or result.get("fake_probability (%)")
+            )
+
+            return {
+                "prediction": prediction,
+                "confidence": confidence
             }
-            return formatted_result
 
         except Exception as e:
-            print(f"Prediction error: {e}")
+            print("Prediction error:", e)
             return {"error": str(e)}
 
 
-# Lazy global instance
+
 _detector = None
 
 
 def init_model():
-    """Initialize detector once at app startup"""
     global _detector
     if _detector is None:
         _detector = AIDetector()
@@ -87,7 +85,6 @@ def init_model():
 
 
 def detect_image(image_path):
-    """Main function your app should call"""
     global _detector
     if _detector is None:
         init_model()
