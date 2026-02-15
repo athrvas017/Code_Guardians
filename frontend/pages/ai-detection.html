@@ -438,7 +438,9 @@
 
 
     function displayResult(result) {
-      const isReal = result.prediction === 'real';
+      const prediction = (result.prediction || '').toLowerCase();
+      const isReal = prediction === 'real';
+      const confidence = result["confidence (%)"] || 0;
 
       // Update result card
       resultCard.className = `result-card visible ${isReal ? 'real' : 'ai-generated'}`;
@@ -450,8 +452,8 @@
 
       // Update confidence bar
       confidenceFill.className = `confidence-fill ${isReal ? 'real' : 'ai-generated'}`;
-      confidenceFill.style.width = `${result.confidence}%`;
-      confidenceText.textContent = `Confidence: ${result.confidence.toFixed(1)}%`;
+      confidenceFill.style.width = `${confidence}%`;
+      confidenceText.textContent = `Confidence: ${confidence.toFixed(1)}%`;
     }
   </script>
 </body>
